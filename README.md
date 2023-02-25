@@ -1,11 +1,10 @@
-﻿This is the first notebook in the…nnsNotebook program.
+﻿
+Welcome to the nnsNotebook program! 
 
-Each Notebook is a directory, currently with one page inside it: Page1.html
+Each Notebook tab above is a directory under Documents\nnsNotebook. Each one can contain unlimited pages.
 
-Next feature to implement is multiple pages per notebook.
+It currently can switch between 10 notebooks, auto saves every 5 minutes as well as on tab change and on close. Rich text formatting is fairly robust, and accessed by selecting a piece of text then using the popup.
 
-It currently can switch between 10 notesbooks, auto saves every 5 minutes as well as on tab change and on close.
-
-And I got a cute Icon from Icon8 for it
+Additional features will be added soon, such as file exporting, syncronization, and more.
 
 <img src="nnsNotebook-Repository-OG-Hero1.png" />
