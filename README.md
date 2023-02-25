@@ -8,4 +8,4 @@ It currently can switch between 10 notesbooks, auto saves every 5 minutes as wel
 
 And I got a cute Icon from Icon8 for it
 
-<img src="readme.jpg" />
+<img src="nnsNotebook-Repository-OG-Hero1.png" />
