@@ -23,22 +23,23 @@ type
     HtmlEditor1: THtmlEditor;
     tSave: TTimer;
     actman: TActionManager;
-    Action1: TAction;
-    Action2: TAction;
+    actPageNext: TAction;
+    actPagePrev: TAction;
     ActionToolBar2: TActionToolBar;
     actNotebookNext: TAction;
     Action3: TAction;
     unvis: TPanel;
     imgcol: TImageCollection;
     imglst: TVirtualImageList;
+    StatusBar1: TStatusBar;
     procedure FormCreate(Sender: TObject);
     procedure HtTabSet1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure actTabsNextExecute(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure tSaveTimer(Sender: TObject);
-    procedure Action2Execute(Sender: TObject);
-    procedure Action1Execute(Sender: TObject);
+    procedure actPagePrevExecute(Sender: TObject);
+    procedure actPageNextExecute(Sender: TObject);
     procedure Action3Execute(Sender: TObject);
     procedure actNotebookNextExecute(Sender: TObject);
   private
@@ -63,12 +64,12 @@ implementation
 
 {$R *.dfm}
 
-procedure TForm1.Action1Execute(Sender: TObject);
+procedure TForm1.actPageNextExecute(Sender: TObject);
 begin
   NextPage;
 end;
 
-procedure TForm1.Action2Execute(Sender: TObject);
+procedure TForm1.actPagePrevExecute(Sender: TObject);
 begin
   PrevPage;
 end;
@@ -127,11 +128,32 @@ begin
   begin
     HtmlEditor1.SelectAll;
     HtmlEditor1.DeleteSelection;
+    if (zbiNewNotebook = 1) and (zbiNewPage = 1) then
+    begin
+      HtmlEditor1.LoadFromString('<html><body><p><b>'+
+        '<span style="color: #1F497D">Welcome to the Near North Notebook program!</span></b>&nbsp;<br/>'+
+        '<small>aka <b>nnNotebook</b>!</small><br>'+
+        'Each Notebook tab above is a directory under Documents\nnNotebook. '+
+        'Each one can contain unlimited pages.</p>'+
+        '<p>It currently can switch between 10 notebooks, auto saves every 5 minutes '+
+        'as well as on tab change and on close. '+
+        'Rich text formatting is fairly robust, and accessed by selecting a piece of '+
+        'text then using the <span style="background-color: #FFFF00">popup</span>.</p>'+
+        '<p>Additional features will be added soon, such as file exporting, '+
+        'syncronization, and more.</p><p>&nbsp;</p>'+
+        '<p style="text-align:justify;">Example: Select this text with your mouse to see the formatting toolbar</p><p>&nbsp;</p>'+
+        '</body></html>')
+    end;
+
   end;
 
   // Now set current notebook since we have finished loading
   zbiCurrentNotebook := zbiNewNotebook;
   zbiCurrentPage := zbiNewPage;
+
+  Statusbar1.Panels[0].Text := (
+    Format('Notebook %d, page %d',
+      [zbiCurrentNotebook+1, zbiCurrentPage+1]));
 end;
 
 function TForm1.GetNotebookDir(zbiNotebook: ZeroBasedInteger): string;
@@ -170,7 +192,7 @@ begin
   zbiCurrentNotebook := 0;
   zbiCurrentPage := 0;
   // Crete database directory
-  AppDataDir := Format('%s\nnsNotebook\', [TPath.GetDocumentsPath]);
+  AppDataDir := Format('%s\nnNotebook\', [TPath.GetDocumentsPath]);
   TDirectory.CreateDirectory(AppDataDir);
 
   LoadPage(0);

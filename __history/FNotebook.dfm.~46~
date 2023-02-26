@@ -5589,7 +5589,7 @@ object Form1: TForm1
     DoubleBuffered = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -17
+    Font.Height = -20
     Font.Name = 'Segoe UI'
     Font.Style = []
     ParentDoubleBuffered = False
@@ -5618,7 +5618,7 @@ object Form1: TForm1
     Left = 247
     Top = 99
     Width = 829
-    Height = 485
+    Height = 459
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
@@ -5652,6 +5652,9 @@ object Form1: TForm1
     BlockHighlightColor = 1350598816
     Encoding = heDefault
     DefaultParaTag = 'p'
+    ExplicitLeft = 255
+    ExplicitTop = 107
+    ExplicitHeight = 485
   end
   object ActionToolBar2: TActionToolBar
     Left = 0
@@ -5671,7 +5674,7 @@ object Form1: TForm1
     ColorMap.UnusedColor = clWhite
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -24
+    Font.Height = -20
     Font.Name = 'Segoe UI'
     Font.Style = []
     ParentFont = False
@@ -5681,7 +5684,7 @@ object Form1: TForm1
     Left = 0
     Top = 99
     Width = 247
-    Height = 485
+    Height = 459
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
@@ -5689,8 +5692,23 @@ object Form1: TForm1
     Align = alLeft
     TabOrder = 3
     Visible = False
-    ExplicitTop = 83
-    ExplicitHeight = 501
+    ExplicitHeight = 485
+  end
+  object StatusBar1: TStatusBar
+    Left = 0
+    Top = 558
+    Width = 1076
+    Height = 26
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
+    Panels = <
+      item
+        Width = 50
+      end>
+    ExplicitTop = 753
+    ExplicitWidth = 1435
   end
   object tSave: TTimer
     Interval = 300000
@@ -5718,13 +5736,13 @@ object Form1: TForm1
             Caption = '-'
           end
           item
-            Action = Action2
+            Action = actPagePrev
             ImageIndex = 0
             ImageName = 'back-to'
             ShortCut = 49227
           end
           item
-            Action = Action1
+            Action = actPageNext
             ImageIndex = 1
             ImageName = 'next-page'
             ShortCut = 49226
@@ -5733,7 +5751,7 @@ object Form1: TForm1
       end>
     Images = imglst
     Left = 76
-    Top = 150
+    Top = 135
     StyleName = 'Platform Default'
     object Action3: TAction
       Category = 'Notebook'
@@ -5743,21 +5761,21 @@ object Form1: TForm1
       ShortCut = 49228
       OnExecute = Action3Execute
     end
-    object Action2: TAction
+    object actPagePrev: TAction
       Category = 'Page'
       Caption = '&Prev Page'
       ImageIndex = 0
       ImageName = 'back-to'
       ShortCut = 49227
-      OnExecute = Action2Execute
+      OnExecute = actPagePrevExecute
     end
-    object Action1: TAction
+    object actPageNext: TAction
       Category = 'Page'
       Caption = '&Next Page'
       ImageIndex = 1
       ImageName = 'next-page'
       ShortCut = 49226
-      OnExecute = Action1Execute
+      OnExecute = actPageNextExecute
     end
     object actNotebookNext: TAction
       Category = 'Notebook'
@@ -6683,8 +6701,8 @@ object Form1: TForm1
         Name = 'chevron-right'
       end>
     ImageCollection = imgcol
-    Width = 48
-    Height = 48
+    Width = 32
+    Height = 32
     Left = 13
     Top = 132
   end

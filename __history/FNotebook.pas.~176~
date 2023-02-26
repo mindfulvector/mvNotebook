@@ -23,28 +23,29 @@ type
     HtmlEditor1: THtmlEditor;
     tSave: TTimer;
     actman: TActionManager;
-    Action1: TAction;
-    Action2: TAction;
+    actPageNext: TAction;
+    actPagePrev: TAction;
     ActionToolBar2: TActionToolBar;
     actNotebookNext: TAction;
     Action3: TAction;
     unvis: TPanel;
     imgcol: TImageCollection;
     imglst: TVirtualImageList;
+    StatusBar1: TStatusBar;
     procedure FormCreate(Sender: TObject);
     procedure HtTabSet1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
     procedure actTabsNextExecute(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure tSaveTimer(Sender: TObject);
-    procedure Action2Execute(Sender: TObject);
-    procedure Action1Execute(Sender: TObject);
+    procedure actPagePrevExecute(Sender: TObject);
+    procedure actPageNextExecute(Sender: TObject);
     procedure Action3Execute(Sender: TObject);
     procedure actNotebookNextExecute(Sender: TObject);
   private
     { Private declarations }
-    CurrentNotebook: integer;
-    CurrentPage: integer;
+    zbiCurrentNotebook: ZeroBasedInteger;
+    zbiCurrentPage: ZeroBasedInteger;
     AppDataDir: string;
     procedure LoadPage(zbiNewNotebook: ZeroBasedInteger;
                        zbiNewPage: ZeroBasedInteger = 0);
@@ -63,14 +64,14 @@ implementation
 
 {$R *.dfm}
 
-procedure TForm1.Action1Execute(Sender: TObject);
+procedure TForm1.actPageNextExecute(Sender: TObject);
 begin
-  //HtTabSet1.SelectNext(true);
+  NextPage;
 end;
 
-procedure TForm1.Action2Execute(Sender: TObject);
+procedure TForm1.actPagePrevExecute(Sender: TObject);
 begin
-  //HtTabSet1.SelectNext(false);
+  PrevPage;
 end;
 
 procedure TForm1.Action3Execute(Sender: TObject);
@@ -88,6 +89,19 @@ begin
   HtTabSet1.SelectNext(True);
 end;
 
+procedure TForm1.NextPage;
+begin
+  LoadPage(zbiCurrentNotebook, zbiCurrentPage + 1);
+end;
+
+procedure TForm1.PrevPage;
+begin
+  if zbiCurrentPage > 0 then
+  begin
+    LoadPage(zbiCurrentNotebook, zbiCurrentPage - 1);
+  end;
+end;
+
 procedure TForm1.LoadPage(zbiNewNotebook: ZeroBasedInteger;
                           zbiNewPage: ZeroBasedInteger = 0);
 var
@@ -95,17 +109,22 @@ var
   pageFile: string;
 begin
 
-  // To notify other events that we are loading
-  CurrentNotebook := -1;
-  CurrentPage := -1;
+  // Temporarily set the new notebook and page for directory creation
+  zbiCurrentNotebook := zbiNewNotebook;
+  zbiCurrentPage := zbiNewPage;
 
-  // Ensure new notebook exists
+  // Ensure new notebook directory exists
   notebookDir := GetNotebookDir;
   notebookDir := Format('%s\Notebook%d\', [AppDataDir, zbiNewNotebook + 1]);
   TDirectory.CreateDirectory(notebookDir);
 
   // Load new notebook from page 1 for now, until we have proper page handling
   pageFile := Format('%s\Page%d.html', [notebookDir, zbiNewPage + 1]);
+
+  // To notify other events that we are loading
+  zbiCurrentNotebook := -1;
+  zbiCurrentPage := -1;
+
   if TFile.Exists(pageFile) then
   begin
     HtmlEditor1.LoadFromFile(pageFile);
@@ -114,16 +133,37 @@ begin
   begin
     HtmlEditor1.SelectAll;
     HtmlEditor1.DeleteSelection;
+    if (zbiNewNotebook = 0) and (zbiNewPage = 0) then
+    begin
+      HtmlEditor1.LoadFromString('<html><body><p><b>'+
+        '<span style="color: #1F497D">Welcome to the Near North Notebook program!</span></b>&nbsp;<br/>'+
+        '<small>aka <b>nnNotebook</b>!</small><br>'+
+        'Each Notebook tab above is a directory under Documents\nnNotebook. '+
+        'Each one can contain unlimited pages.</p>'+
+        '<p>It currently can switch between 10 notebooks, auto saves every 5 minutes '+
+        'as well as on tab change and on close. '+
+        'Rich text formatting is fairly robust, and accessed by selecting a piece of '+
+        'text then using the <span style="background-color: #FFFF00">popup</span>.</p>'+
+        '<p>Additional features will be added soon, such as file exporting, '+
+        'syncronization, and more.</p><p>&nbsp;</p>'+
+        '<p style="text-align:justify;">Example: Select this text with your mouse to see the formatting toolbar</p><p>&nbsp;</p>'+
+        '</body></html>')
+    end;
+
   end;
 
   // Now set current notebook since we have finished loading
-  CurrentNotebook := zbiNewNotebook;
-  CurrentPage := zbiNewPage;
+  zbiCurrentNotebook := zbiNewNotebook;
+  zbiCurrentPage := zbiNewPage;
+
+  Statusbar1.Panels[0].Text := (
+    Format('Notebook %d, page %d',
+      [zbiCurrentNotebook + 1, zbiCurrentPage + 1]));
 end;
 
 function TForm1.GetNotebookDir(zbiNotebook: ZeroBasedInteger): string;
 begin
-  if zbiNotebook = -1 then zbiNotebook := CurrentNotebook;
+  if zbiNotebook = -1 then zbiNotebook := zbiCurrentNotebook;
 
   // Ensure current notebook dir exists
   Result := Format('%s\Notebook%d\', [AppDataDir, zbiNotebook + 1]);
@@ -136,7 +176,7 @@ var
 begin
   notebookDir := GetNotebookDir;
   // Save current page to directory above
-  HtmlEditor1.SavetoFile(Format('%s\Page%d.html', [notebookDir, CurrentPage + 1]));
+  HtmlEditor1.SavetoFile(Format('%s\Page%d.html', [notebookDir, zbiCurrentPage + 1]));
 end;
 
 procedure TForm1.tSaveTimer(Sender: TObject);
@@ -154,10 +194,10 @@ var
   i: integer;
   editor: THtmlEditor;
 begin
-  CurrentNotebook := 0;
-  CurrentPage := 0;
+  zbiCurrentNotebook := 0;
+  zbiCurrentPage := 0;
   // Crete database directory
-  AppDataDir := Format('%s\nnsNotebook\', [TPath.GetDocumentsPath]);
+  AppDataDir := Format('%s\nnNotebook\', [TPath.GetDocumentsPath]);
   TDirectory.CreateDirectory(AppDataDir);
 
   LoadPage(0);

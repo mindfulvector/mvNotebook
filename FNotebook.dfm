@@ -5589,8 +5589,8 @@ object Form1: TForm1
     DoubleBuffered = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -17
-    Font.Name = 'Segoe UI'
+    Font.Height = -20
+    Font.Name = 'Roboto'
     Font.Style = []
     ParentDoubleBuffered = False
     ParentShowHint = False
@@ -5616,9 +5616,9 @@ object Form1: TForm1
   end
   object HtmlEditor1: THtmlEditor
     Left = 247
-    Top = 99
+    Top = 83
     Width = 829
-    Height = 485
+    Height = 475
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
@@ -5628,8 +5628,8 @@ object Form1: TForm1
     Color = clWindow
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = 21
-    Font.Name = 'Times New Roman'
+    Font.Height = 24
+    Font.Name = 'Roboto'
     Font.Style = []
     ParentBackground = False
     ParentFont = False
@@ -5657,7 +5657,7 @@ object Form1: TForm1
     Left = 0
     Top = 41
     Width = 1076
-    Height = 58
+    Height = 42
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
@@ -5671,17 +5671,17 @@ object Form1: TForm1
     ColorMap.UnusedColor = clWhite
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -24
-    Font.Name = 'Segoe UI'
+    Font.Height = -20
+    Font.Name = 'Roboto'
     Font.Style = []
     ParentFont = False
     Spacing = 0
   end
   object unvis: TPanel
     Left = 0
-    Top = 99
+    Top = 83
     Width = 247
-    Height = 485
+    Height = 475
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
@@ -5689,8 +5689,20 @@ object Form1: TForm1
     Align = alLeft
     TabOrder = 3
     Visible = False
-    ExplicitTop = 83
-    ExplicitHeight = 501
+  end
+  object StatusBar1: TStatusBar
+    Left = 0
+    Top = 558
+    Width = 1076
+    Height = 26
+    Margins.Left = 4
+    Margins.Top = 4
+    Margins.Right = 4
+    Margins.Bottom = 4
+    Panels = <
+      item
+        Width = 50
+      end>
   end
   object tSave: TTimer
     Interval = 300000
@@ -6683,8 +6695,8 @@ object Form1: TForm1
         Name = 'chevron-right'
       end>
     ImageCollection = imgcol
-    Width = 48
-    Height = 48
+    Width = 32
+    Height = 32
     Left = 13
     Top = 132
   end
