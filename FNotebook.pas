@@ -5,14 +5,13 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, IOUtils,
-
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Tabs, htmlcomp, Vcl.ExtCtrls,
+  htmledit, Crypt2, Global, System.ImageList, Vcl.ImgList, Vcl.VirtualImageList,
+  Vcl.BaseImageCollection, Vcl.ImageCollection, System.Actions, Vcl.ActnList,
+  Vcl.PlatformDefaultStyleActnCtrls, Vcl.ActnMan, Vcl.ExtCtrls, Vcl.ComCtrls,
+  Vcl.ToolWin, Vcl.ActnCtrls, htmlcomp, Vcl.Controls, Vcl.Tabs,
+  Vcl.Graphics, Vcl.Forms, Vcl.Dialogs,
   System.Generics.Collections,
-
-  htmledit, System.Actions, Vcl.ActnList, Vcl.BaseImageCollection,
-  VCL.TMSFNCTypes, Vcl.ComCtrls, Vcl.ToolWin, JvExComCtrls, JvToolBar,
-  System.ImageList, Vcl.ImgList, Vcl.VirtualImageList, Vcl.ImageCollection,
-  Vcl.PlatformDefaultStyleActnCtrls, Vcl.ActnMan, Vcl.ActnCtrls;
+  VCL.TMSFNCTypes, JvExComCtrls, JvToolBar;
 
 type
   ZeroBasedInteger = integer;
@@ -32,6 +31,7 @@ type
     imgcol: TImageCollection;
     imglst: TVirtualImageList;
     StatusBar1: TStatusBar;
+    actPageExport: TAction;
     procedure FormCreate(Sender: TObject);
     procedure HtTabSet1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
@@ -42,6 +42,8 @@ type
     procedure actPageNextExecute(Sender: TObject);
     procedure Action3Execute(Sender: TObject);
     procedure actNotebookNextExecute(Sender: TObject);
+    procedure actPageExportExecute(Sender: TObject);
+    procedure HtmlEditor1UrlClick(Sender: TElement);
   private
     { Private declarations }
     zbiCurrentNotebook: ZeroBasedInteger;
@@ -53,6 +55,9 @@ type
     procedure SavePage;
     procedure NextPage;
     procedure PrevPage;
+    procedure ExportPage;
+    procedure ImportPage;
+    procedure LaunchBrowser(URL: string);
   public
     { Public declarations }
   end;
@@ -63,6 +68,13 @@ var
 implementation
 
 {$R *.dfm}
+
+uses ShellApi;
+
+procedure TForm1.actPageExportExecute(Sender: TObject);
+begin
+  ExportPage;
+end;
 
 procedure TForm1.actPageNextExecute(Sender: TObject);
 begin
@@ -95,6 +107,16 @@ procedure TForm1.NextPage;
 begin
   SavePage;
   LoadPage(zbiCurrentNotebook, zbiCurrentPage + 1);
+end;
+
+procedure TForm1.ExportPage;
+begin
+
+end;
+
+procedure TForm1.ImportPage;
+begin
+
 end;
 
 procedure TForm1.PrevPage;
@@ -187,6 +209,12 @@ begin
   HtmlEditor1.SavetoFile(Format('%s\Page%d.html', [notebookDir, zbiCurrentPage + 1]));
 end;
 
+procedure TForm1.LaunchBrowser(URL: string);
+begin
+  URL := StringReplace(URL, '"', '%22', [rfReplaceAll]);
+  ShellExecute(0, 'open', PChar(URL), nil, nil, SW_SHOWNORMAL);
+end;
+
 procedure TForm1.tSaveTimer(Sender: TObject);
 begin
   SavePage;
@@ -201,7 +229,18 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   i: integer;
   editor: THtmlEditor;
+  glob: HCkGlobal;
+  success: boolean;
 begin
+
+  glob := CkGlobal_Create();
+  success := CkGlobal_UnlockBundle(glob,'Anything for 30-day trial');
+  if (success <> True) then
+  begin
+    ShowMessage(Format('Unable to load chikcat.dll, error recieved was: "%s"', [CkGlobal__lastErrorText(glob)]));
+    Exit;
+  end;
+
   zbiCurrentNotebook := 0;
   zbiCurrentPage := 0;
   // Crete database directory
@@ -209,6 +248,11 @@ begin
   TDirectory.CreateDirectory(AppDataDir);
 
   LoadPage(0);
+end;
+
+procedure TForm1.HtmlEditor1UrlClick(Sender: TElement);
+begin
+  LaunchBrowser(Sender['href']);
 end;
 
 procedure TForm1.HtTabSet1Change(Sender: TObject; NewTab: Integer;
