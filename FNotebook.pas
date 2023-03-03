@@ -3,23 +3,25 @@ unit FNotebook;
 interface
 
 uses
+  htmlcomp, htmlpars,
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, IOUtils,
-  htmledit, Crypt2, Global, System.ImageList, Vcl.ImgList, Vcl.VirtualImageList,
+  htmledit, Crypt2 { Chilkat }, Global { Chilkat }, System.ImageList,
+  Vcl.ImgList, Vcl.VirtualImageList,
   Vcl.BaseImageCollection, Vcl.ImageCollection, System.Actions, Vcl.ActnList,
   Vcl.PlatformDefaultStyleActnCtrls, Vcl.ActnMan, Vcl.ExtCtrls, Vcl.ComCtrls,
-  Vcl.ToolWin, Vcl.ActnCtrls, htmlcomp, Vcl.Controls, Vcl.Tabs,
+  Vcl.ToolWin, Vcl.ActnCtrls, Vcl.Controls, Vcl.Tabs,
   Vcl.Graphics, Vcl.Forms, Vcl.Dialogs,
   System.Generics.Collections,
   VCL.TMSFNCTypes, JvExComCtrls, JvToolBar, Vcl.StdCtrls, JvExStdCtrls,
   JvHtControls, Vcl.FileCtrl, FlCtrlEx,
-  clRamLog, clRichLog;
+  clRamLog, clRichLog, Vcl.Menus, AdvMemo, advmjson;
 
 type
   ZeroBasedInteger = integer;
   OneBasedInteger = integer;
 
-  TForm1 = class(TForm)
+  TNotebook = class(TForm)
     HtTabSet1: THtTabSet;
     HtmlEditor1: THtmlEditor;
     tSave: TTimer;
@@ -35,6 +37,16 @@ type
     StatusBar1: TStatusBar;
     actPageExport: TAction;
     FileListBoxEx1: TFileListBoxEx;
+    filePopupMenu: THtPopupMenu;
+    actPageRename: TAction;
+    Rename1: TMenuItem;
+    actPageDelete: TAction;
+    Delete1: TMenuItem;
+    lstPages: TListBox;
+    actGlobalAbout: TAction;
+    actNotebookRename: TAction;
+    memNotebookMeta: TAdvMemo;
+    AdvJSONMemoStyler1: TAdvJSONMemoStyler;
     procedure FormCreate(Sender: TObject);
     procedure HtTabSet1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
@@ -51,36 +63,52 @@ type
     procedure FormResize(Sender: TObject);
     procedure StatusBar1Click(Sender: TObject);
     procedure StatusBar1DblClick(Sender: TObject);
+    procedure actPageRenameExecute(Sender: TObject);
+    procedure actPageDeleteExecute(Sender: TObject);
+    procedure lstPagesClick(Sender: TObject);
+    procedure lstPagesDblClick(Sender: TObject);
+    procedure lstPagesKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure lstPagesKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure actGlobalAboutExecute(Sender: TObject);
+    procedure actNotebookRenameExecute(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     { Private declarations }
+    metaFile: string;
     bDebugMode: boolean;
     zbiCurrentNotebook: ZeroBasedInteger;
     zbiCurrentPage: ZeroBasedInteger;
     AppDataDir: string;
     richLog: TRichLog;
     ramLog: TRamLog;
-    procedure Log(message: string);
+    loadingMode: string;
+    procedure Log(message: string; alsoShowMessage: boolean = false);
     procedure LoadPage(zbiNewNotebook: ZeroBasedInteger;
                        zbiNewPage: ZeroBasedInteger = 0);
     function GetNotebookDir(zbiNotebook: ZeroBasedInteger = -1): string;
+    function GetPageFilename(zbiPage: ZeroBasedInteger): string;
     procedure SavePage;
     procedure NextPage;
     procedure PrevPage;
     procedure ExportPage;
     procedure ImportPage;
     procedure LaunchBrowser(URL: string);
+    procedure RefreshPagesListBox(findFilename: string = '<:NONE:>');
+    procedure EnterLoadingMode(modeName: string);
+    procedure LeaveLoadingMode(modeName: string);
   public
     { Public declarations }
   end;
 
 var
-  Form1: TForm1;
+  Notebook: TNotebook;
 
 implementation
 
 {$R *.dfm}
 
-uses ShellApi;
+uses ShellApi, System.StrUtils, System.JSON, JsonObject { Chilkat };
 
 resourcestring
   StrUnableToLoadChikc = 'Unable to load chikcat.dll, error recieved was: "%s"';
@@ -102,56 +130,199 @@ resourcestring
 const STATUSPANEL_STATE: integer = 0;
 const STATUSPANEL_CURRENT_LOCATION: integer = 1;
 
-procedure TForm1.actPageExportExecute(Sender: TObject);
+procedure TNotebook.actPageDeleteExecute(Sender: TObject);
+var
+  currentFilename, newFilename: string;
+  buttonSelected : Integer;
 begin
+  Log('actPageDeleteExecute ====================================================');
+
+  EnterLoadingMode('actPageDelete');
+  currentFilename := GetPageFilename(FileListBoxEx1.ItemIndex);
+  buttonSelected := MessageDlg('Do you want to delete the file: "' + currentFilename + '" from the current notebook?',
+    mtCustom, [mbYes, mbNo], 0);
+
+  if buttonSelected = mrYes then
+  begin
+    currentFilename := GetNotebookDir + currentFilename;
+    if DeleteFile(currentFilename) then
+    begin
+      if FileListBoxEx1.ItemIndex > 0 then
+        FileListBoxEx1.ItemIndex := FileListBoxEx1.ItemIndex - 1
+      else if FileListBoxEx1.Count > 0 then
+          FileListBoxEx1.ItemIndex := FileListBoxEx1.ItemIndex + 1
+        else
+          FileListBoxEx1.ItemIndex := -1;
+      if FileListBoxEx1.ItemIndex > -1 then
+        LoadPage(zbiCurrentNotebook, FileListBoxEx1.ItemIndex)
+      else
+        LoadPage(zbiCurrentNotebook, 0);
+      Log(Format('FileListBoxEx1.ItemIndex( new value )=%d', [FileListBoxEx1.ItemIndex]));
+      RefreshPagesListBox;
+      HtmlEditor1.Visible := false;
+      
+      Log('File has been deleted!', true);
+    end else begin
+      Log('Unable to delete file "'+currentFilename+'"', true);
+    end;
+  end;
+
+  LeaveLoadingMode('actPageDelete');
+end;
+
+procedure TNotebook.actPageExportExecute(Sender: TObject);
+begin
+  Log('actPageExportExecute ====================================================');
   ExportPage;
 end;
 
-procedure TForm1.actPageNextExecute(Sender: TObject);
+procedure TNotebook.actPageNextExecute(Sender: TObject);
 begin
+  Log('actPageNextExecute ======================================================');
   NextPage;
 end;
 
-procedure TForm1.actPagePrevExecute(Sender: TObject);
+procedure TNotebook.actPagePrevExecute(Sender: TObject);
 begin
+  Log('actPagePrevExecute ======================================================');
   PrevPage;
 end;
 
-procedure TForm1.Action3Execute(Sender: TObject);
+procedure TNotebook.actPageRenameExecute(Sender: TObject);
+var
+  currentFilename, newFilenameBasename, newFileFullPath: string;
 begin
+  Log('actPageRenameExecute ====================================================');
+  currentFilename := GetPageFilename(FileListBoxEx1.ItemIndex);
+  newFilenameBasename := InputBox('Rename page', 'Enter new name:', currentFilename);
+  newFilenameBasename := newFilenameBasename.Trim;
+  if (newFilenameBasename.Length > 0) and (newFilenameBasename <> currentFilename)  then
+  begin
+    if not EndsStr('.html', newFilenameBasename) then
+      newFilenameBasename := newFilenameBasename + '.html';
+
+    currentFilename := GetNotebookDir + currentFilename;
+    newFileFullPath := GetNotebookDir + newFilenameBasename;
+    Log('Rename file "'+currentFilename+'" to "'+newFileFullPath+'"');
+    if RenameFile(currentFilename, newFileFullPath) then
+    begin
+      Log('File renamed successfully');
+      RefreshPagesListBox(newFilenameBasename);
+    end else begin
+      Log('Unable to rename file "'+currentFilename+'" to "'+newFileFullPath+'"', true);
+    end;
+  end;
+end;
+
+procedure TNotebook.actGlobalAboutExecute(Sender: TObject);
+begin
+  ShowMessage('soNotebook created by Stone Orb Software. '+#13#10+
+  'Copyright 2023. All rights reserved. '+#13#10+
+  'The source code for this program is open source, '+#13#10+
+  #13#10+
+  'but this binary file is not!'+#13#10+
+  #13#10+
+  'This program is the work of a single individual, '+#13#10+
+  'mindfulvector, who asks for your help to earn a '+#13#10+
+  'living if you have found this software useful.'+#13#10+
+  #13#10+
+  'Please do not share this file, and instead direct '+#13#10+
+  'interested persons to the itch.io site where they '+#13#10+
+  'can purchase their own copy for a very small amount. '+#13#10+
+  #13#10+
+  'Thank you for your support!');
+end;
+
+procedure TNotebook.Action3Execute(Sender: TObject);
+begin
+  Log('Action3Execute ==========================================================');
   HtTabSet1.SelectNext(true);
 end;
 
-procedure TForm1.actNotebookNextExecute(Sender: TObject);
+procedure TNotebook.actNotebookNextExecute(Sender: TObject);
 begin
+  Log('actNotebookNextExecute ==================================================');
   SavePage;
   HtTabSet1.SelectNext(false);
 end;
 
-procedure TForm1.actTabsNextExecute(Sender: TObject);
+procedure TNotebook.actNotebookRenameExecute(Sender: TObject);
+var
+  json: HCkJsonObject;
+  success: Boolean;
+  newNotebookName: string;
+  currNotebookName: string;
 begin
+  Log('actNotebookRenameExecute ================================================');
+
+
+  json := CkJsonObject_Create();
+  CkJsonObject_putEmitCompact(json,False);
+
+// Assume the file contains the data as shown above..
+success := CkJsonObject_Load(json, PChar(memNotebookMeta.Lines.Text));
+if (success <> True) then
+  begin
+    Log('Error loading JSON meta data:'+CkJsonObject__lastErrorText(json));
+    Exit;
+  end;
+
+  currNotebookName := CkJsonObject__stringOf(json,
+                          PChar(Format('Notebook%d', [zbiCurrentNotebook+1])));
+
+  Log('currNotebookName: '+currNotebookName);
+  newNotebookName := InputBox('Rename notebook',
+    Format('Enter name for notebook #%d', [zbiCurrentNotebook+1]), currNotebookName);
+  newNotebookName := newNotebookName.Trim;
+  if (newNotebookName.Length > 0) then
+  begin
+    Log(Format('Rename notebook #%d to "%s"', [zbiCurrentNotebook+1, newNotebookName]));
+    CkJsonObject_SetStringOf(json, PChar(Format('Notebook%d', [zbiCurrentNotebook+1])),
+      PChar(newNotebookName));
+
+    CkJsonObject_putEmitCompact(json,False);
+
+    // If bare-LF line endings are desired, turn off EmitCrLf
+    // Otherwise CRLF line endings are emitted.
+    CkJsonObject_putEmitCrLf(json,False);
+
+    // Emit the formatted JSON:
+    memNotebookMeta.Lines.Text := CkJsonObject__emit(json);
+    Log(Format('Saving meta data file to "%s"', [metaFile]));
+    memNotebookMeta.SaveToJSONFile(metaFile);
+
+  end;
+end;
+
+procedure TNotebook.actTabsNextExecute(Sender: TObject);
+begin
+  Log('actTabsNextExecute ======================================================');
   SavePage;
   HtTabSet1.SelectNext(True);
 end;
 
-procedure TForm1.NextPage;
+procedure TNotebook.NextPage;
 begin
+  Log('NextPage ----------------------------------------------------------------');
   SavePage;
   LoadPage(zbiCurrentNotebook, zbiCurrentPage + 1);
 end;
 
-procedure TForm1.ExportPage;
+procedure TNotebook.ExportPage;
 begin
-
+  Log('ExportPage --------------------------------------------------------------');
+  ShowMessage('Export page!');
 end;
 
-procedure TForm1.ImportPage;
+procedure TNotebook.ImportPage;
 begin
-
+  Log('ImportPage --------------------------------------------------------------');
+  ShowMessage('Import page!');
 end;
 
-procedure TForm1.PrevPage;
+procedure TNotebook.PrevPage;
 begin
+  Log('PrevPage ----------------------------------------------------------------');
   SavePage;
   if zbiCurrentPage > 0 then
   begin
@@ -159,21 +330,56 @@ begin
   end;
 end;
 
-procedure TForm1.Log(message: string);
+procedure TNotebook.Log(message: string; alsoShowMessage: boolean = false);
 begin
   ramLog.AddInfo('[' + DateTimeToStr(Now) + '] ' + message);
+  ramLog.SaveAsTextFile(AppDataDir+'log.txt');
   if bDebugMode then
     StatusBar1.Panels[STATUSPANEL_STATE].Text := message;
+  if alsoShowMessage then
+    ShowMessage(message);
 end;
 
-procedure TForm1.LoadPage(zbiNewNotebook: ZeroBasedInteger;
+procedure TNotebook.lstPagesClick(Sender: TObject);
+begin
+  Log(Format('lstPagesClick ItemIndex=%d', [lstPages.ItemIndex]));
+  FileListBoxEx1.ItemIndex := lstPages.ItemIndex;
+  FileListBoxEx1Change(FileListBoxEx1);
+end;
+
+procedure TNotebook.lstPagesDblClick(Sender: TObject);
+begin
+  Log(Format('lstPagesDblClick ItemIndex=%d', [lstPages.ItemIndex]));
+  FileListBoxEx1.ItemIndex := lstPages.ItemIndex;
+  FileListBoxEx1Change(FileListBoxEx1);
+end;
+
+procedure TNotebook.lstPagesKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  Log(Format('lstPagesKeyDown( IGNORED! ) ItemIndex=%d', [lstPages.ItemIndex]));
+{   Log(Format('lstPagesKeyUp ItemIndex=%d', [lstPages.ItemIndex]));
+  FileListBoxEx1.ItemIndex := lstPages.ItemIndex;
+  FileListBoxEx1Change(FileListBoxEx1);
+}
+end;
+
+procedure TNotebook.lstPagesKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  Log(Format('lstPagesKeyUp ItemIndex=%d', [lstPages.ItemIndex]));
+  FileListBoxEx1.ItemIndex := lstPages.ItemIndex;
+  FileListBoxEx1Change(FileListBoxEx1);
+end;
+
+procedure TNotebook.LoadPage(zbiNewNotebook: ZeroBasedInteger;
                           zbiNewPage: ZeroBasedInteger = 0);
 var
   notebookDir: string;
   pageFile: string;
 begin
-  // If off, log lines don't appear in status bar
-  bDebugMode := false;
+  Log('LoadPage ----------------------------------------------------------------');
+  Log(Format('LoadPage(%d, %d)', [zbiNewNotebook, zbiNewPage]));
 
   // Temporarily set the new notebook and page for directory creation
   zbiCurrentNotebook := zbiNewNotebook;
@@ -181,8 +387,9 @@ begin
 
   // Ensure new notebook directory exists
   notebookDir := GetNotebookDir;
-  notebookDir := Format('%sNotebook%d', [AppDataDir, zbiNewNotebook + 1]);
+  notebookDir := Format('%sNotebook%d\', [AppDataDir, zbiNewNotebook + 1]);
   TDirectory.CreateDirectory(notebookDir);
+  Log(Format('LoadPage::notebookDir=%s', [notebookDir]));
 
   if not FileListBoxEx1.Directory.ToUpper.Equals(notebookDir.ToUpper) then
   begin
@@ -193,27 +400,29 @@ begin
   end;
 
   // Determine the page file
-  pageFile := Format('%s\Page%d.html', [notebookDir, zbiNewPage + 1]);
+  pageFile := notebookDir + GetPageFilename(zbiNewPage);
+  Log(Format('LoadPage::pageFile=%s', [pageFile]));
 
-  // To notify other events that we are loading, set both values to -1
-  // so that other events don't accidentally replace something when
-  // we start modifying values in a moment
-  zbiCurrentNotebook := -1;
-  zbiCurrentPage := -1;
+  EnterLoadingMode('LoadPage');
 
   // Check if the page file we calculated above exists or not, then either
   // load it or clear the editor. On first start of the program, load
   // default text into Notebook 1, Page 1.
   if TFile.Exists(pageFile) then
   begin
+    Log(Format('LoadPage::LoadFromFile=%s', [pageFile]));
     HtmlEditor1.LoadFromFile(pageFile);
+    HtmlEditor1.Visible := true;
   end
   else
   begin
+    Log('LoadPage::No file found, clear editor');
+    HtmlEditor1.Visible := true;
     HtmlEditor1.SelectAll;
     HtmlEditor1.DeleteSelection;
     if (zbiNewNotebook = 0) and (zbiNewPage = 0) then
     begin
+      Log('LoadPage::Initialize default Notebook 1, Page 1 content');
       HtmlEditor1.LoadFromString(
 StrDefaultPage1_Begin+
 StrDefaultPage1_Line2+
@@ -226,39 +435,94 @@ StrDefaultPage1_End)
 
   end;
 
+  Log(Format('LoadPage::Set flags to NORMAL mode: '+
+    'zbiCurrentNotebook=%d, zbiCurrentPage=%d',
+    [zbiCurrentNotebook, zbiCurrentPage]));
+
   // Now set current notebook since we have finished loading
   zbiCurrentNotebook := zbiNewNotebook;
   zbiCurrentPage := zbiNewPage;
 
+  RefreshPagesListBox;
+
+  Log(Format('LoadPage::FileListBoxEx1.ItemIndex( currently is )=%d', [FileListBoxEx1.ItemIndex]));
+  FileListBoxEx1.ItemIndex := zbiNewPage;
+  lstPages.ItemIndex := zbiNewPage;
+  Log(Format('LoadPage::FileListBoxEx1.ItemIndex( new value is )=%d', [FileListBoxEx1.ItemIndex]));
+
+
   Statusbar1.Panels[STATUSPANEL_CURRENT_LOCATION].Text := (
     Format('Notebook %d, page %d',
       [zbiCurrentNotebook + 1, zbiCurrentPage + 1]));
+
+  Log(Format('LoadPage::Updated statusbar panel #%d text for current page: "%s"',
+    [STATUSPANEL_CURRENT_LOCATION,
+      Statusbar1.Panels[STATUSPANEL_CURRENT_LOCATION].Text]));
+  LeaveLoadingMode('LoadPage');
+
 end;
 
-function TForm1.GetNotebookDir(zbiNotebook: ZeroBasedInteger): string;
+function TNotebook.GetNotebookDir(zbiNotebook: ZeroBasedInteger): string;
 begin
   if zbiNotebook = -1 then zbiNotebook := zbiCurrentNotebook;
 
   // Ensure current notebook dir exists
-  Result := Format('%s\Notebook%d\', [AppDataDir, zbiNotebook + 1]);
+  Result := Format('%sNotebook%d\', [AppDataDir, zbiNotebook + 1]);
   TDirectory.CreateDirectory(Result);
+  Log(Format('GetNotebookDir(zbiNotebook=%d)=%s', [zbiNotebook, Result]));
 end;
 
-procedure TForm1.SavePage;
+function TNotebook.GetPageFilename(zbiPage: ZeroBasedInteger): string;
+begin
+  Log(Format('GetPageFilename(zbiPage=%d)', [zbiPage]));
+  if (FileListBoxEx1.Count = 0) or (zbiPage > FileListBoxEx1.Count - 1) then
+  begin
+    Log(Format('Index out of range %d-%d, initialize new page', [0, FileListBoxEx1.Count-1]));
+    Result := Format('Page%d.html', [zbiPage]);
+  end else begin
+    Result := FileListBoxEx1.Items[zbiPage];
+  end;
+  Log(Format('GetPageFilename(zbiPage=%d)=%s', [zbiPage, Result]));
+end;
+
+procedure TNotebook.SavePage;
 var
   notebookDir: string;
+  pageFile: string;
 begin
-  notebookDir := GetNotebookDir;
-  // Save current page to directory above
-  HtmlEditor1.SavetoFile(Format('%s\Page%d.html', [notebookDir, zbiCurrentPage + 1]));
+  Log('SavePage ----------------------------------------------------------------');
+
+  Log(Format('Saving meta data file to "%s"', [metaFile]));
+  memNotebookMeta.SaveToJSONFile(metaFile);
+
+  Log(Format('SavePage zbiCurrentPage=%d', [zbiCurrentPage]));
+  if loadingMode.Length = 0 then
+  begin
+    if HtmlEditor1.Visible then
+    begin
+      notebookDir := GetNotebookDir;
+      pageFile := notebookDir + GetPageFilename(zbiCurrentPage);
+      // Save current page to directory above
+      Log(Format('SavePage::notebookDir=%s', [notebookDir]));
+      Log(Format('SavePage::pageFile=%s', [pageFile]));
+      HtmlEditor1.SavetoFile(pageFile);
+    end else begin
+      Log('Loading mode "<:DISABLED EDITOR:>" in effect, IGNORE SavePage command');
+    end;
+  end else begin
+    Log(Format('Loading mode "%s" in effect, IGNORE SavePage command', [loadingMode]));
+  end;
 end;
 
-procedure TForm1.StatusBar1Click(Sender: TObject);
+procedure TNotebook.StatusBar1Click(Sender: TObject);
 begin
+  Log('StatusBar1Click');
   if richLog.Visible then
   begin
     bDebugMode := false;
     richLog.Visible := false;
+    FileListBoxEx1.Visible := false;
+    memNotebookMeta.Visible := false;
   end else begin
     bDebugMode := not bDebugMode;
   end;
@@ -269,9 +533,12 @@ begin
 
 end;
 
-procedure TForm1.StatusBar1DblClick(Sender: TObject);
+procedure TNotebook.StatusBar1DblClick(Sender: TObject);
 begin
+  Log('StatusBar1DblClick');
   richLog.Visible := true;
+  FileListBoxEx1.Visible := true;
+  memNotebookMeta.Visible := true;
   bDebugMode := true;
   if richLog.Visible then
     Log('Full log view enabled. Click status bar to disable')
@@ -279,32 +546,113 @@ begin
     Log('Full log view disabled.');
 end;
 
-procedure TForm1.LaunchBrowser(URL: string);
+procedure TNotebook.LaunchBrowser(URL: string);
 begin
+  Log('LaunchBrowser');
   URL := StringReplace(URL, '"', '%22', [rfReplaceAll]);
   ShellExecute(0, 'open', PChar(URL), nil, nil, SW_SHOWNORMAL);
 end;
 
-procedure TForm1.tSaveTimer(Sender: TObject);
-begin
-  SavePage;
-end;
-
-procedure TForm1.FileListBoxEx1Change(Sender: TObject);
-begin
-  if (zbiCurrentNotebook > -1) and (FileListBoxEx1.ItemIndex > -1) then
-    LoadPage(zbiCurrentNotebook, FileListBoxEx1.ItemIndex);
-end;
-
-procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  SavePage;
-end;
-
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TNotebook.RefreshPagesListBox(findFilename: string = '<:NONE:>');
 var
+  zbiCurrentNotebookWas, zbiCurrentPageWas: integer;
+  currentPageNameWas: string;
   i: integer;
-  editor: THtmlEditor;
+begin
+  Log(Format('RefreshPagesListBox zbiCurrentNotebook=%d, zbiCurrentPage=%d',
+    [zbiCurrentNotebook, zbiCurrentPage]));
+  zbiCurrentNotebookWas := zbiCurrentNotebook;
+  zbiCurrentPageWas := zbiCurrentPage;
+  if zbiCurrentPage > -1 then
+    currentPageNameWas := findFilename
+  else
+    currentPageNameWas := '<:NONE:>';
+
+  EnterLoadingMode('RefreshPagesListBox');
+
+  // First, refresh the backing file list
+  // Silly mask that'll never match to
+  FileListBoxEx1.Mask := '*.refresh';
+  // force a refresh when we set real one
+  FileListBoxEx1.Mask := '*.html';
+  // Now, refresh the sorted view list
+  lstPages.Items := FileListBoxEx1.Items;
+
+  zbiCurrentNotebook := zbiCurrentNotebookWas;
+
+  // Instead of restoring zbiCurrentPageWas, search for the filename we had
+  // selected in case it has moved position
+  for i := 0 to FileListBoxEx1.Count -1 do
+  begin
+    if FileListBoxEx1.Items[i] = currentPageNameWas then
+    begin
+      Log(Format('Found page "%s" at index %d', [currentPageNameWas, i]));
+      zbiCurrentPage := i;
+    end;
+  end;
+
+  Log(Format('RefreshPagesListBox restoring indicies to zbiCurrentNotebook=%d, zbiCurrentPage=%d',
+    [zbiCurrentNotebook, zbiCurrentPage]));
+
+  LeaveLoadingMode('RefreshPagesListBox');
+end;
+
+procedure TNotebook.EnterLoadingMode(modeName: string);
+begin
+  // To notify other events that we are loading, set loadingMode
+  // so that other events don't accidentally replace something when
+  // we start modifying values in a moment
+  loadingMode := modeName;
+  Log(Format('<<<<<<<<<< loadingMode="%s"', [loadingMode]));
+end;
+
+procedure TNotebook.LeaveLoadingMode(modeName: string);
+begin
+  if loadingMode.Equals(modeName) then
+  begin
+    Log(Format('RESET loadingMode="%s" >>>>>', [loadingMode]));
+    loadingMode := '';
+    Log(Format('loadingMode="%s"', [loadingMode]));
+  end else begin
+    Log(Format('Loading mode mismatch!! Expected "%s" but we are in mode "%s". Program must exit.',
+    [modeName, loadingMode]));
+    Exit;
+  end;
+end;
+
+procedure TNotebook.tSaveTimer(Sender: TObject);
+begin
+  Log('tSaveTimer');
+  SavePage;
+end;
+
+procedure TNotebook.FileListBoxEx1Change(Sender: TObject);
+begin
+  // First two are -1 if we are loading a new page right now and shouldn't
+  // take any additional actions. Third is -1 if there is no selection.
+  if (loadingMode.Length = 0) and (FileListBoxEx1.ItemIndex > -1) then
+  begin
+    Log('FileListBoxEx1Change, not ignored');
+    if zbiCurrentPage <> FileListBoxEx1.ItemIndex then
+    begin
+      // This would clobber a file if we had just deleted or renamed one and
+      // the sort order changed
+      SavePage;
+    end;
+    LoadPage(zbiCurrentNotebook, FileListBoxEx1.ItemIndex);
+  end else begin
+    Log('FileListBoxEx1Change, ignored due to loading');
+  end;
+end;
+
+procedure TNotebook.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Log('FormClose ===============================================================');
+  SavePage;
+end;
+
+procedure TNotebook.FormCreate(Sender: TObject);
+var
   glob: HCkGlobal;
   success: boolean;
 begin
@@ -314,10 +662,20 @@ begin
   richLog.Height := 200;
   richLog.ReadOnly := true;
   richLog.Visible := false;
+  richLog.Font.Name := 'Consolas';
+  richLog.Font.Size := 12;
   ramLog := TRamLog.Create;
   ramLog.RichLog := richLog;
 
+  
+  // Crete database directory (needed to write log output)
+  AppDataDir := Format('%s\nnNotebook\', [TPath.GetDocumentsPath]);
+  TDirectory.CreateDirectory(AppDataDir);
+
   Log('Starting app');
+
+  // If off, log lines don't appear in status bar
+  bDebugMode := false;
 
   glob := CkGlobal_Create();
   success := CkGlobal_UnlockBundle(glob,'Anything for 30-day trial');
@@ -329,28 +687,41 @@ begin
 
   zbiCurrentNotebook := 0;
   zbiCurrentPage := 0;
-  // Crete database directory
-  AppDataDir := Format('%s\nnNotebook\', [TPath.GetDocumentsPath]);
-  TDirectory.CreateDirectory(AppDataDir);
+
+  metaFile := AppDataDir + 'meta.json';
+  if FileExists(metaFile) then
+  begin
+    Log(Format('Loading meta data file from "%s"', [metaFile]));
+    memNotebookMeta.LoadFromJSONFile(metaFile);
+  end;
 
   LoadPage(0);
 end;
 
-procedure TForm1.FormResize(Sender: TObject);
+procedure TNotebook.FormResize(Sender: TObject);
 begin
   richLog.Top := StatusBar1.Top - richLog.Height;
   richLog.Width := self.Width;
+  FileListBoxEx1.Top := richLog.Top - FileListBoxEx1.Height - 5;
+  memNotebookMeta.Top := FileListBoxEx1.Top;
   StatusBar1.Panels[STATUSPANEL_STATE].Width := Round(self.Width * 0.75);
 end;
 
-procedure TForm1.HtmlEditor1UrlClick(Sender: TElement);
+procedure TNotebook.FormShow(Sender: TObject);
 begin
+  memNotebookMeta.Visible := false;
+end;
+
+procedure TNotebook.HtmlEditor1UrlClick(Sender: TElement);
+begin
+  Log('HtmlEditor1UrlClick -----------------------------------------------------');
   LaunchBrowser(Sender['href']);
 end;
 
-procedure TForm1.HtTabSet1Change(Sender: TObject; NewTab: Integer;
+procedure TNotebook.HtTabSet1Change(Sender: TObject; NewTab: Integer;
   var AllowChange: Boolean);
 begin
+  Log('HtTabSet1Change =========================================================');
   SavePage;
   // Takes only the tab to load for now, defaults to page 1
   LoadPage(NewTab);

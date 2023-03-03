@@ -7,13 +7,13 @@ uses
   madListProcesses,
   madListModules,
   Vcl.Forms,
-  FNotebook in 'FNotebook.pas' {Form1};
+  FNotebook in 'FNotebook.pas' {Notebook};
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TNotebook, Notebook);
   Application.Run;
 end.
