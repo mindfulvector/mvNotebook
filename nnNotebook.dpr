@@ -7,7 +7,8 @@ uses
   madListProcesses,
   madListModules,
   Vcl.Forms,
-  FNotebook in 'FNotebook.pas' {Notebook};
+  FNotebook in 'FNotebook.pas' {Notebook},
+  CJsonObject in 'CJsonObject.pas' {JsonObjectMv: TFrame};
 
 {$R *.res}
 

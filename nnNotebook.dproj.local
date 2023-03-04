@@ -7,8 +7,8 @@
     <Transaction>2023/02/22 18:37:56.000.862,=D:\Delphi\Projects\Unit1.pas</Transaction>
     <Transaction>2023/02/23 07:12:44.000.602,=D:\Delphi\Projects\Unit1.pas</Transaction>
     <Transaction>2023/02/23 08:48:18.000.865,=D:\Delphi\Projects\Unit1.pas</Transaction>
-    <Transaction>2023/02/23 08:51:46.000.992,D:\Delphi\Projects\Unit1.dfm=D:\Delphi\Projects\FNotebook.dfm</Transaction>
     <Transaction>2023/02/23 08:51:46.000.992,D:\Delphi\Projects\Unit1.pas=D:\Delphi\Projects\FNotebook.pas</Transaction>
+    <Transaction>2023/02/23 08:51:46.000.992,D:\Delphi\Projects\Unit1.dfm=D:\Delphi\Projects\FNotebook.dfm</Transaction>
     <Transaction>2023/02/23 08:52:28.000.428,D:\Delphi\Projects\FNotebook.pas=D:\Delphi\Projects\Notebook\FNotebook.pas</Transaction>
     <Transaction>2023/02/23 08:52:28.000.428,D:\Delphi\Projects\FNotebook.dfm=D:\Delphi\Projects\Notebook\FNotebook.dfm</Transaction>
     <Transaction>2023/02/23 08:52:35.000.470,D:\Delphi\Projects\Project1.dproj=D:\Delphi\Projects\Notebook.dproj</Transaction>
@@ -16,5 +16,15 @@
     <Transaction>2023/02/24 06:36:09.000.929,=D:\Delphi\Projects\Notebook\_Assets\icons8-spiral-bound-booklet-500.svg</Transaction>
     <Transaction>2023/02/24 06:36:23.000.357,D:\Delphi\Projects\Notebook\_Assets\icons8-spiral-bound-booklet-500.svg=</Transaction>
     <Transaction>2023/02/26 16:31:53.000.503,D:\Delphi\Projects\Notebook\nnNotebook.dproj=D:\Delphi\Projects\Notebook\Notebook.dproj</Transaction>
+    <Transaction>2023/03/03 14:57:46.000.513,=D:\Dev\Embar\Projects\Notebook\Unit1.pas</Transaction>
+    <Transaction>2023/03/03 17:33:07.115,=D:\Dev\Embar\Projects\Notebook\Unit1.pas</Transaction>
+    <Transaction>2023/03/03 17:49:42.122,D:\Dev\Embar\Projects\Notebook\CJsonObject.pas=D:\Dev\Embar\Projects\Notebook\Unit1.pas</Transaction>
+    <Transaction>2023/03/03 17:49:42.122,D:\Dev\Embar\Projects\Notebook\CJsonObject.dfm=D:\Dev\Embar\Projects\Notebook\Unit1.dfm</Transaction>
+    <Transaction>2023/03/03 17:50:05.144,D:\Dev\Embar\Projects\Notebook\JsonObject.pas=D:\Dev\Embar\Projects\Notebook\CJsonObject.pas</Transaction>
+    <Transaction>2023/03/03 17:50:05.144,D:\Dev\Embar\Projects\Notebook\JsonObject.dfm=D:\Dev\Embar\Projects\Notebook\CJsonObject.dfm</Transaction>
+    <Transaction>2023/03/03 17:51:25.789,D:\Dev\Embar\Projects\Notebook\JsonObject.pas=</Transaction>
+    <Transaction>2023/03/03 17:51:30.651,=D:\Dev\Embar\Projects\Notebook\Unit1.pas</Transaction>
+    <Transaction>2023/03/03 17:52:21.930,D:\Dev\Embar\Projects\Notebook\CJsonObject.dfm=D:\Dev\Embar\Projects\Notebook\Unit1.dfm</Transaction>
+    <Transaction>2023/03/03 17:52:21.930,D:\Dev\Embar\Projects\Notebook\CJsonObject.pas=D:\Dev\Embar\Projects\Notebook\Unit1.pas</Transaction>
   </Transactions>
 </BorlandProject>

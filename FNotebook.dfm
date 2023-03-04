@@ -5611,7 +5611,7 @@ object Notebook: TNotebook
     UnselectedColor = cl3DLight
     StyleName = 'Windows'
     OnChange = HtTabSet1Change
-    ExplicitWidth = 960
+    ExplicitWidth = 954
   end
   object HtmlEditor1: THtmlEditor
     Left = 369
@@ -5650,8 +5650,8 @@ object Notebook: TNotebook
     BlockHighlightColor = 1350598816
     Encoding = heDefault
     DefaultParaTag = 'p'
-    ExplicitWidth = 591
-    ExplicitHeight = 507
+    ExplicitWidth = 585
+    ExplicitHeight = 490
   end
   object ActionToolBar2: TActionToolBar
     Left = 0
@@ -5672,7 +5672,7 @@ object Notebook: TNotebook
     Font.Style = []
     ParentFont = False
     Spacing = 0
-    ExplicitWidth = 960
+    ExplicitWidth = 954
   end
   object unvis: TPanel
     Left = 0
@@ -5682,7 +5682,7 @@ object Notebook: TNotebook
     Align = alLeft
     TabOrder = 3
     Visible = False
-    ExplicitHeight = 507
+    ExplicitHeight = 490
   end
   object StatusBar1: TStatusBar
     Left = 0
@@ -5700,8 +5700,8 @@ object Notebook: TNotebook
       end>
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 572
-    ExplicitWidth = 960
+    ExplicitTop = 555
+    ExplicitWidth = 954
   end
   object lstPages: TListBox
     Left = 185
@@ -5722,7 +5722,7 @@ object Notebook: TNotebook
     OnDblClick = lstPagesDblClick
     OnKeyDown = lstPagesKeyDown
     OnKeyUp = lstPagesKeyUp
-    ExplicitHeight = 507
+    ExplicitHeight = 490
   end
   object FileListBoxEx1: TFileListBoxEx
     Left = 191
@@ -5806,14 +5806,14 @@ object Notebook: TNotebook
     EnhancedHomeKey = False
     Gutter.Font.Charset = DEFAULT_CHARSET
     Gutter.Font.Color = clWindowText
-    Gutter.Font.Height = -13
+    Gutter.Font.Height = -14
     Gutter.Font.Name = 'Courier New'
     Gutter.Font.Style = []
     Gutter.GutterColorTo = clBtnFace
     Gutter.LineNumberTextColor = clWindowText
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -13
+    Font.Height = -14
     Font.Name = 'COURIER NEW'
     Font.Style = []
     HiddenCaret = False
@@ -5837,7 +5837,7 @@ object Notebook: TNotebook
     SelBkColor = clHighlight
     ShowRightMargin = True
     SmartTabs = False
-    SyntaxStyles = AdvJSONMemoStyler1
+    SyntaxStyles = jsonStyle
     TabOrder = 7
     TabStop = True
     TrimTrailingSpaces = False
@@ -7234,7 +7234,7 @@ object Notebook: TNotebook
       Action = actPageDelete
     end
   end
-  object AdvJSONMemoStyler1: TAdvJSONMemoStyler
+  object jsonStyle: TAdvJSONMemoStyler
     CommentStyle.TextColor = clNavy
     CommentStyle.BkColor = clWhite
     CommentStyle.Style = [fsItalic]
@@ -7319,7 +7319,7 @@ object Notebook: TNotebook
         RegionType = rtClosed
         ShowComments = False
       end>
-    Left = 408
-    Top = 184
+    Left = 704
+    Top = 368
   end
 end

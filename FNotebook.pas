@@ -15,7 +15,7 @@ uses
   System.Generics.Collections,
   VCL.TMSFNCTypes, JvExComCtrls, JvToolBar, Vcl.StdCtrls, JvExStdCtrls,
   JvHtControls, Vcl.FileCtrl, FlCtrlEx,
-  clRamLog, clRichLog, Vcl.Menus, AdvMemo, advmjson;
+  clRamLog, clRichLog, Vcl.Menus, AdvMemo, advmjson, CJsonObject;
 
 type
   ZeroBasedInteger = integer;
@@ -46,7 +46,7 @@ type
     actGlobalAbout: TAction;
     actNotebookRename: TAction;
     memNotebookMeta: TAdvMemo;
-    AdvJSONMemoStyler1: TAdvJSONMemoStyler;
+    jsonStyle: TAdvJSONMemoStyler;
     procedure FormCreate(Sender: TObject);
     procedure HtTabSet1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
@@ -97,6 +97,8 @@ type
     procedure RefreshPagesListBox(findFilename: string = '<:NONE:>');
     procedure EnterLoadingMode(modeName: string);
     procedure LeaveLoadingMode(modeName: string);
+    function GetJsonMeta(var json: HCkJsonObject; fieldName: string; var success: boolean): string;
+    procedure SetJsonMeta(json: HCkJsonObject; fieldName: string; fieldValue: string);
   public
     { Public declarations }
   end;
@@ -252,24 +254,18 @@ var
   success: Boolean;
   newNotebookName: string;
   currNotebookName: string;
+  fieldName: string;
+  fieldValue: string;
 begin
   Log('actNotebookRenameExecute ================================================');
 
+  // Field to fetch notebook name from in JSON meta object
+  fieldName := Format('Notebook%d', [zbiCurrentNotebook+1]);
+  fieldValue := GetJsonMeta(json, fieldName, success);
 
-  json := CkJsonObject_Create();
-  CkJsonObject_putEmitCompact(json,False);
-
-// Assume the file contains the data as shown above..
-success := CkJsonObject_Load(json, PChar(memNotebookMeta.Lines.Text));
-if (success <> True) then
-  begin
-    Log('Error loading JSON meta data:'+CkJsonObject__lastErrorText(json));
-    Exit;
-  end;
-
-  currNotebookName := CkJsonObject__stringOf(json,
-                          PChar(Format('Notebook%d', [zbiCurrentNotebook+1])));
-
+  if not success then exit;
+  
+  currNotebookName := fieldValue;
   Log('currNotebookName: '+currNotebookName);
   newNotebookName := InputBox('Rename notebook',
     Format('Enter name for notebook #%d', [zbiCurrentNotebook+1]), currNotebookName);
@@ -277,19 +273,8 @@ if (success <> True) then
   if (newNotebookName.Length > 0) then
   begin
     Log(Format('Rename notebook #%d to "%s"', [zbiCurrentNotebook+1, newNotebookName]));
-    CkJsonObject_SetStringOf(json, PChar(Format('Notebook%d', [zbiCurrentNotebook+1])),
-      PChar(newNotebookName));
-
-    CkJsonObject_putEmitCompact(json,False);
-
-    // If bare-LF line endings are desired, turn off EmitCrLf
-    // Otherwise CRLF line endings are emitted.
-    CkJsonObject_putEmitCrLf(json,False);
-
-    // Emit the formatted JSON:
-    memNotebookMeta.Lines.Text := CkJsonObject__emit(json);
-    Log(Format('Saving meta data file to "%s"', [metaFile]));
-    memNotebookMeta.SaveToJSONFile(metaFile);
+    fieldValue := newNotebookName;
+    SetJsonMeta(json, fieldName, fieldValue);
 
   end;
 end;
@@ -618,6 +603,34 @@ begin
     [modeName, loadingMode]));
     Exit;
   end;
+end;
+
+function TNotebook.GetJsonMeta(var json: HCkJsonObject; fieldName: string; var success: boolean): string;
+begin
+  json := CkJsonObject_Create;
+  CkJsonObject_putEmitCompact(json, False);
+  success := CkJsonObject_Load(json, PChar(memNotebookMeta.Lines.Text));
+  if (success <> True) then
+  begin
+    Log('Error loading JSON meta data:' + CkJsonObject__lastErrorText(json));
+  end
+  else
+  begin
+    Result := CkJsonObject__stringOf(json, PChar(fieldName));
+  end;
+end;
+
+procedure TNotebook.SetJsonMeta(json: HCkJsonObject; fieldName: string; fieldValue: string);
+begin
+  CkJsonObject_SetStringOf(json, PChar(fieldName), PChar(fieldValue));
+  CkJsonObject_putEmitCompact(json, False);
+  // If bare-LF line endings are desired, turn off EmitCrLf
+  // Otherwise CRLF line endings are emitted.
+  CkJsonObject_putEmitCrLf(json, False);
+  // Emit the formatted JSON:
+  memNotebookMeta.Lines.Text := CkJsonObject__emit(json);
+  Log(Format('Saving meta data file to "%s"', [metaFile]));
+  memNotebookMeta.SaveToJSONFile(metaFile);
 end;
 
 procedure TNotebook.tSaveTimer(Sender: TObject);
