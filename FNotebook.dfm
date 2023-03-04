@@ -5727,7 +5727,7 @@ object Notebook: TNotebook
   object FileListBoxEx1: TFileListBoxEx
     Left = 191
     Top = 309
-    Width = 186
+    Width = 250
     Height = 258
     Mask = '*.html'
     PopupMenu = filePopupMenu
@@ -5736,6 +5736,15 @@ object Notebook: TNotebook
     Visible = False
     OnChange = FileListBoxEx1Change
     Version = '1.3.2.0'
+  end
+  object lstNotebookNames: TListBox
+    Left = 464
+    Top = 309
+    Width = 225
+    Height = 258
+    ItemHeight = 15
+    TabOrder = 7
+    Visible = False
   end
   object tSave: TTimer
     Interval = 300000

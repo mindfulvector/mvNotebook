@@ -45,6 +45,7 @@ type
     lstPages: TListBox;
     actGlobalAbout: TAction;
     actNotebookRename: TAction;
+    lstNotebookNames: TListBox;
     procedure FormCreate(Sender: TObject);
     procedure HtTabSet1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
@@ -418,7 +419,6 @@ StrDefaultPage1_End)
   zbiCurrentNotebook := zbiNewNotebook;
   zbiCurrentPage := zbiNewPage;
 
-  RefreshPagesListBox;
 
   Log(Format('LoadPage::FileListBoxEx1.ItemIndex( currently is )=%d', [FileListBoxEx1.ItemIndex]));
   FileListBoxEx1.ItemIndex := zbiNewPage;
@@ -433,7 +433,16 @@ StrDefaultPage1_End)
   Log(Format('LoadPage::Updated statusbar panel #%d text for current page: "%s"',
     [STATUSPANEL_CURRENT_LOCATION,
       Statusbar1.Panels[STATUSPANEL_CURRENT_LOCATION].Text]));
+
+  // We must leave this loading mode because RefreshPagesListBox also
+  // uses a loading mode, which would cause a hault when we attempt
+  // to leave our loading mode since it would clear the mode flag.
+  // We could use a stack of modes instead but we are effectively done
+  // anyway with our own loading so we can pass it on to that proc now.
   LeaveLoadingMode('LoadPage');
+
+  RefreshPagesListBox;
+
 
 end;
 
@@ -510,7 +519,7 @@ begin
   Log('StatusBar1DblClick');
   richLog.Visible := true;
   FileListBoxEx1.Visible := true;
-  //memNotebookMeta.Visible := true;
+  lstNotebookNames.Visible := true;
   bDebugMode := true;
   if richLog.Visible then
     Log('Full log view enabled. Click status bar to disable')
@@ -587,8 +596,8 @@ begin
     Log(Format('loadingMode="%s"', [loadingMode]));
   end else begin
     Log(Format('Loading mode mismatch!! Expected "%s" but we are in mode "%s". Program must exit.',
-    [modeName, loadingMode]));
-    Exit;
+    [modeName, loadingMode]), true);
+    Halt;
   end;
 end;
 
@@ -636,7 +645,7 @@ var
   i: Integer;
 begin
   Log('LoadNotebookNames =======================================================');
-
+  lstNotebookNames.Items := notebookNames;
   // Field to fetch notebook name from in JSON meta object
   for i := 1 to 10 do
   begin
@@ -706,7 +715,7 @@ begin
   if (success <> True) then
   begin
     ShowMessage(Format(StrUnableToLoadChikc, [CkGlobal__lastErrorText(glob)]));
-    Exit;
+    Halt;
   end;
 
   zbiCurrentNotebook := 0;
@@ -732,7 +741,7 @@ begin
   richLog.Top := StatusBar1.Top - richLog.Height;
   richLog.Width := self.Width;
   FileListBoxEx1.Top := richLog.Top - FileListBoxEx1.Height - 5;
-  //memNotebookMeta.Top := FileListBoxEx1.Top;
+  lstNotebookNames.Top := FileListBoxEx1.Top;
   StatusBar1.Panels[STATUSPANEL_STATE].Width := Round(self.Width * 0.75);
 end;
 
