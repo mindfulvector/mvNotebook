@@ -15,7 +15,8 @@ uses
   System.Generics.Collections,
   VCL.TMSFNCTypes, JvExComCtrls, JvToolBar, Vcl.StdCtrls, JvExStdCtrls,
   JvHtControls, Vcl.FileCtrl, FlCtrlEx,
-  clRamLog, clRichLog, Vcl.Menus, AdvMemo, advmjson, CJsonObject;
+  clRamLog, clRichLog, Vcl.Menus, AdvMemo, advmjson, CJsonObject,
+  Chilkat_v9_5_0_TLB;
 
 type
   ZeroBasedInteger = integer;
@@ -46,6 +47,15 @@ type
     actGlobalAbout: TAction;
     actNotebookRename: TAction;
     lstNotebookNames: TListBox;
+    actPageSave: TAction;
+    Save1: TMenuItem;
+    NextTab1: TMenuItem;
+    N1: TMenuItem;
+    exportDlg: TSaveDialog;
+    importDlg: TOpenDialog;
+    actPageImport: TAction;
+    ImportPage1: TMenuItem;
+    N2: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure HtTabSet1Change(Sender: TObject; NewTab: Integer;
       var AllowChange: Boolean);
@@ -72,6 +82,10 @@ type
     procedure actGlobalAboutExecute(Sender: TObject);
     procedure actNotebookRenameExecute(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure lstPagesMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure actPageSaveExecute(Sender: TObject);
+    procedure actPageImportExecute(Sender: TObject);
   private
     { Private declarations }
     metaFile: string;
@@ -111,7 +125,7 @@ implementation
 
 {$R *.dfm}
 
-uses ShellApi, System.StrUtils, System.JSON, JsonObject { Chilkat };
+uses ShellApi, System.StrUtils, System.JSON, JsonObject { Chilkat }, FAbout;
 
 resourcestring
   StrUnableToLoadChikc = 'Unable to load chikcat.dll, error recieved was: "%s"';
@@ -139,9 +153,14 @@ var
   buttonSelected : Integer;
 begin
   Log('actPageDeleteExecute ====================================================');
+  if lstPages.ItemIndex = -1 then
+  begin
+    Log('No file selected, ItemIndex is -1');
+    Exit;
+  end;
 
   EnterLoadingMode('actPageDelete');
-  currentFilename := GetPageFilename(FileListBoxEx1.ItemIndex);
+  currentFilename := GetPageFilename(lstPages.ItemIndex);
   buttonSelected := MessageDlg('Do you want to delete the file: "' + currentFilename + '" from the current notebook?',
     mtCustom, [mbYes, mbNo], 0);
 
@@ -150,20 +169,16 @@ begin
     currentFilename := GetNotebookDir + currentFilename;
     if DeleteFile(currentFilename) then
     begin
-      if FileListBoxEx1.ItemIndex > 0 then
-        FileListBoxEx1.ItemIndex := FileListBoxEx1.ItemIndex - 1
-      else if FileListBoxEx1.Count > 0 then
-          FileListBoxEx1.ItemIndex := FileListBoxEx1.ItemIndex + 1
+      if lstPages.ItemIndex > 0 then
+        lstPages.ItemIndex := lstPages.ItemIndex - 1
+      else if lstPages.Count > 0 then
+          lstPages.ItemIndex := lstPages.ItemIndex + 1
         else
-          FileListBoxEx1.ItemIndex := -1;
-      if FileListBoxEx1.ItemIndex > -1 then
-        LoadPage(zbiCurrentNotebook, FileListBoxEx1.ItemIndex)
-      else
-        LoadPage(zbiCurrentNotebook, 0);
-      Log(Format('FileListBoxEx1.ItemIndex( new value )=%d', [FileListBoxEx1.ItemIndex]));
-      RefreshPagesListBox;
+          lstPages.ItemIndex := -1;
+
+      Log(Format('lstPages.ItemIndex( new value )=%d', [lstPages.ItemIndex]));
+
       HtmlEditor1.Visible := false;
-      
       Log('File has been deleted!', true);
     end else begin
       Log('Unable to delete file "'+currentFilename+'"', true);
@@ -171,6 +186,16 @@ begin
   end;
 
   LeaveLoadingMode('actPageDelete');
+  if lstPages.ItemIndex > -1 then
+    LoadPage(zbiCurrentNotebook, lstPages.ItemIndex)
+  else
+    LoadPage(zbiCurrentNotebook, 0);
+
+  RefreshPagesListBox;
+
+  // Mismatch in UI, so just hide the editor until user selects page they
+  // want
+  HtmlEditor1.Visible := false;
 end;
 
 procedure TNotebook.actPageExportExecute(Sender: TObject);
@@ -217,23 +242,41 @@ begin
   end;
 end;
 
+procedure TNotebook.actPageSaveExecute(Sender: TObject);
+begin
+  SavePage;
+end;
+
 procedure TNotebook.actGlobalAboutExecute(Sender: TObject);
 begin
-  ShowMessage('soNotebook created by Stone Orb Software. '+#13#10+
-  'Copyright 2023. All rights reserved. '+#13#10+
-  'The source code for this program is open source, '+#13#10+
-  #13#10+
-  'but this binary file is not!'+#13#10+
-  #13#10+
-  'This program is the work of a single individual, '+#13#10+
-  'mindfulvector, who asks for your help to earn a '+#13#10+
-  'living if you have found this software useful.'+#13#10+
-  #13#10+
-  'Please do not share this file, and instead direct '+#13#10+
-  'interested persons to the itch.io site where they '+#13#10+
-  'can purchase their own copy for a very small amount. '+#13#10+
-  #13#10+
-  'Thank you for your support!');
+  AboutBox.ShowModal();
+
+//  ShowMessage('soNotebook created by Stone Orb Software. '+#13#10+
+//  'Copyright 2023. All rights reserved. '+#13#10+
+//  #13#10+
+//  'The source code for this program is open source, '+#13#10+
+//  'but this binary file is not!'+#13#10+
+//  #13#10+
+//  'This program is the work of a single individual, '+#13#10+
+//  'mindfulvector, who asks for your help to earn a '+#13#10+
+//  'living if you have found this software useful.'+#13#10+
+//  #13#10+
+//  'Please do not share this file, and instead direct '+#13#10+
+//  'interested persons to the itch.io site where they '+#13#10+
+//  'can purchase their own copy for a very small amount. '+#13#10+
+//  #13#10+
+//  'Thank you for your support!');
+end;
+
+procedure TNotebook.actPageImportExecute(Sender: TObject);
+begin
+  if importDlg.Execute then
+  begin
+    if not CopyFile(PChar(importDlg.FileName),  PChar(GetNotebookDir+'\' + ExtractFileName(importDlg.FileName)), true) then
+      ShowMessage('File not imported; does it already exist or was the source disk removed?')
+    else
+      RefreshPagesListBox;
+  end;
 end;
 
 procedure TNotebook.Action3Execute(Sender: TObject);
@@ -287,7 +330,11 @@ end;
 procedure TNotebook.ExportPage;
 begin
   Log('ExportPage --------------------------------------------------------------');
-  ShowMessage('Export page!');
+  exportDlg.InitialDir := ExtractFilePath(metaFile);
+  if exportDlg.Execute then
+  begin
+    HtmlEditor1.SaveToFile(exportDlg.FileName);
+  end;
 end;
 
 procedure TNotebook.ImportPage;
@@ -318,14 +365,25 @@ end;
 
 procedure TNotebook.lstPagesClick(Sender: TObject);
 begin
+  Log('lstPagesClick ===========================================================');
   Log(Format('lstPagesClick ItemIndex=%d', [lstPages.ItemIndex]));
+  if loadingMode.Length > 0 then begin
+    Log(Format('lstPagesClick ignored due to loading mode "%s"', [loadingMode]));
+    Exit;
+  end;
+
   FileListBoxEx1.ItemIndex := lstPages.ItemIndex;
   FileListBoxEx1Change(FileListBoxEx1);
 end;
 
 procedure TNotebook.lstPagesDblClick(Sender: TObject);
 begin
+  Log('lstPagesDblClick =========================================================');
   Log(Format('lstPagesDblClick ItemIndex=%d', [lstPages.ItemIndex]));
+  if loadingMode.Length > 0 then begin
+    Log(Format('lstPagesDblClick ignored due to loading mode "%s"', [loadingMode]));
+    Exit;
+  end;
   FileListBoxEx1.ItemIndex := lstPages.ItemIndex;
   FileListBoxEx1Change(FileListBoxEx1);
 end;
@@ -333,6 +391,7 @@ end;
 procedure TNotebook.lstPagesKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
+  Log('lstPagesKeyDown =========================================================');
   Log(Format('lstPagesKeyDown( IGNORED! ) ItemIndex=%d', [lstPages.ItemIndex]));
 {   Log(Format('lstPagesKeyUp ItemIndex=%d', [lstPages.ItemIndex]));
   FileListBoxEx1.ItemIndex := lstPages.ItemIndex;
@@ -343,9 +402,22 @@ end;
 procedure TNotebook.lstPagesKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
+  Log('lstPagesKeyUp ===========================================================');
+  if loadingMode.Length > 0 then Exit;
   Log(Format('lstPagesKeyUp ItemIndex=%d', [lstPages.ItemIndex]));
   FileListBoxEx1.ItemIndex := lstPages.ItemIndex;
   FileListBoxEx1Change(FileListBoxEx1);
+end;
+
+procedure TNotebook.lstPagesMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  Log('lstPagesMouseDown =======================================================');
+  Log(Format('lstPagesMouseDown ItemIndex=%d', [lstPages.ItemIndex]));
+  if loadingMode.Length > 0 then begin
+    Log(Format('lstPagesMouseDown ignored due to loading mode "%s"', [loadingMode]));
+    Exit;
+  end;
 end;
 
 procedure TNotebook.LoadPage(zbiNewNotebook: ZeroBasedInteger;
@@ -441,7 +513,11 @@ StrDefaultPage1_End)
   // anyway with our own loading so we can pass it on to that proc now.
   LeaveLoadingMode('LoadPage');
 
-  RefreshPagesListBox;
+  if lstPages.ItemIndex > -1 then
+    RefreshPagesListBox(lstPages.Items[lstPages.ItemIndex])
+  else
+    RefreshPagesListBox();
+
 
 
 end;
@@ -539,6 +615,7 @@ var
   zbiCurrentNotebookWas, zbiCurrentPageWas: integer;
   currentPageNameWas: string;
   i: integer;
+  bFoundPage: boolean;
 begin
   Log(Format('RefreshPagesListBox zbiCurrentNotebook=%d, zbiCurrentPage=%d',
     [zbiCurrentNotebook, zbiCurrentPage]));
@@ -565,12 +642,19 @@ begin
   // selected in case it has moved position
   for i := 0 to FileListBoxEx1.Count -1 do
   begin
-    if FileListBoxEx1.Items[i] = currentPageNameWas then
+    if FileListBoxEx1.Items[i].Equals(currentPageNameWas) then
     begin
       Log(Format('Found page "%s" at index %d', [currentPageNameWas, i]));
       zbiCurrentPage := i;
+      bFoundPage := true;
+      Break;
     end;
   end;
+  if bFoundPage then
+    lstPages.ItemIndex := zbiCUrrentPage
+  else
+    Log(Format('Page "%s" was not found in the new pages list. Was deleted?', [currentPageNameWas]));
+
 
   Log(Format('RefreshPagesListBox restoring indicies to zbiCurrentNotebook=%d, zbiCurrentPage=%d',
     [zbiCurrentNotebook, zbiCurrentPage]));
@@ -583,6 +667,13 @@ begin
   // To notify other events that we are loading, set loadingMode
   // so that other events don't accidentally replace something when
   // we start modifying values in a moment
+  if not loadingMode.Equals('') then begin
+    Log(Format('Mode mismatch while entering loading mode "%s"!'#13#10+
+      'Expected "%s" but we are in mode "%s". Program must exit.',
+    [modeName, '', loadingMode]), true);
+    Halt;
+  end;
+
   loadingMode := modeName;
   Log(Format('<<<<<<<<<< loadingMode="%s"', [loadingMode]));
 end;
@@ -595,7 +686,8 @@ begin
     loadingMode := '';
     Log(Format('loadingMode="%s"', [loadingMode]));
   end else begin
-    Log(Format('Loading mode mismatch!! Expected "%s" but we are in mode "%s". Program must exit.',
+    Log(Format('Mode mismatch while exiting loading mode!'#13#10+
+      'Expected "%s" but we are in mode "%s". Program must exit.',
     [modeName, loadingMode]), true);
     Halt;
   end;

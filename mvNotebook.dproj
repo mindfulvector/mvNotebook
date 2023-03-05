@@ -8,7 +8,7 @@
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
-        <MainSource>nnNotebook.dpr</MainSource>
+        <MainSource>mvNotebook.dpr</MainSource>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>
@@ -69,7 +69,7 @@
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
-        <SanitizedProjectName>nnNotebook</SanitizedProjectName>
+        <SanitizedProjectName>mvNotebook</SanitizedProjectName>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <DCC_UsePackage>FireDACIBDriver;vclwinx;DataSnapServer;htmlcompfm_xe11;fmx;vclie;DbxCommonDriver;bindengine;IndyIPCommon;VCLRESTComponents;DBXMSSQLDriver;FireDACCommonODBC;emsclient;aurelius;FMX_FlexCel_Components;appanalytics;IndyProtocols;vclx;Skia.Package.RTL;dbxcds;vcledge;FmxTeeUI;vacommpkgdedXE14;FlexCel_Pdf;DBXFirebirdDriver;hclcore_xe11;SKIA_FlexCel_Core;JvAppFrm;FireDACSqliteDriver;DbxClientDriver;TMSScripter_IDE;JclVcl;soapmidas;TeeUI;Jcl;dbexpress;JvManagedThreads;Python;inet;PythonVcl;vcltouch;TMSFMXPackPkgDXE14;JvDB;FMX_FlexCel_Core;FireDACDBXDriver;fmxdae;JvCustom;tmsbcl;CustomIPTransport;FireDACMSSQLDriver;JvSystem;VCL_FlexCel_Core;JvControls;JvCrypt;JvJans;JvMM;IndySystem;TMSVCLSecuritySystemPkgUIDXE14;JvGlobus;ibxbindings;JclContainers;VCLTMSFNCAppToolsPkgDXE14;JvPageComps;vclFireDAC;FMXTMSFNCCorePkgDXE14;FlexCel_Render;FireDACCommon;DataSnapServerMidas;FireDACODBCDriver;emsserverresource;vacommpkgdXE14;TMSScripter_VCL;bindcompdbx;rtl;FireDACMySQLDriver;VCL_FlexCel_Components;TMSVCLSecuritySystemPkgCoreDXE14;htmlreports_xe11;remotedb;DBXSqliteDriver;DataComponents;DBXSybaseASEDriver;JvRuntimeDesign;JvXPCtrls;vclimg;DataSnapFireDAC;inetdbxpress;FireDAC;JvDocking;JvDlgs;xmlrtl;ibxpress;dsnap;xdata;JvCmp;FireDACDb2Driver;DBXOracleDriver;DBXInformixDriver;vclib;fmxobj;bindcompvclsmp;DataSnapNativeClient;DatasnapConnectorsFreePascal;TMSScripter_Memo;FlexCel_Report;TMSLogging;emshosting;sparkle;TMSCryptoPkgDEDXE14;FireDACCommonDriver;sphinx;IndyIPClient;Mitov_Runtime;TMSVCLPluginFrameworkPkgMgrDXE14;bindcompvclwinx;OpenWireLabPkg;emsedge;bindcompfmx;JvBands;inetdb;ibmonitor;FireDACASADriver;Tee;vclactnband;TMSScripter;fmxFireDAC;FireDACInfxDriver;DBXMySQLDriver;VclSmp;DataSnapCommon;JvPascalInterpreter;fmxase;htmleditcore_xe11;htmledit_xe11;DBXOdbcDriver;JvPluginSystem;dbrtl;JvTimeFramework;FireDACOracleDriver;htmlcomp_xe11;Skia.Package.FMX;TMSDiagram;TeeDB;FlexCel_XlsAdapter;FireDACMSAccDriver;DataSnapIndy10ServerTransport;JclDeveloperTools;FMXTMSFNCAppToolsPkgDXE14;DataSnapConnectors;vcldsnap;DBXInterBaseDriver;FireDACMongoDBDriver;JvWizards;OpenWireEditorPkg;FireDACTDataDriver;Skia.Package.VCL;VCLTMSFNCCorePkgDXE14;vcldb;TMSVCLPluginFrameworkPkgCoreDXE14;SynEditDR;FlexCel_Core;JvCore;bindcomp;IndyCore;RESTBackendComponents;TMSCryptoPkgDXE14;FireDACADSDriver;RESTComponents;IndyIPServer;vcl;dsnapxml;adortl;dsnapcon;DataSnapClient;DataSnapProviderClient;JvDotNetCtrls;JvHMI;TMSScripter_Legacy;DBXDb2Driver;emsclientfiredac;FireDACPgDriver;FireDACDSDriver;Mitov_VCL_Runtime;OpenWirePkg;JvPrintPreview;tethering;JvStdCtrls;bindcompvcl;CloudService;DBXSybaseASADriver;FMXTee;PythonFmx;soaprtl;soapserver;JvNet;$(DCC_UsePackage)</DCC_UsePackage>
@@ -110,10 +110,14 @@
         <UWP_DelphiLogo150>_Assets\logo.png</UWP_DelphiLogo150>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <DCC_Define>madExcept;LeakChecking;$(DCC_Define)</DCC_Define>
         <DCC_MapFile>3</DCC_MapFile>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <Icon_MainIcon>mvNotebook_Icon.ico</Icon_MainIcon>
+        <UWP_DelphiLogo44>_Assets\icons\icons8_Ball_Point_Pen_500px.png</UWP_DelphiLogo44>
+        <UWP_DelphiLogo150>_Assets\icons\icons8_Ball_Point_Pen_500px.png</UWP_DelphiLogo150>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -142,6 +146,10 @@
             <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
+        <DCCReference Include="FAbout.pas">
+            <Form>AboutBox</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -160,26 +168,35 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">nnNotebook.dpr</Source>
+                    <Source Name="MainSource">mvNotebook.dpr</Source>
                 </Source>
                 <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k280.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp280.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k280.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp280.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="4">
                 <DeployFile LocalName="Win32\Debug\nnNotebook.exe" Configuration="Debug" Class="ProjectOutput"/>
-                <DeployFile LocalName="Win64\Debug\nnNotebook.exe" Configuration="Debug" Class="ProjectOutput"/>
-                <DeployFile LocalName="Win64\Debug\nnNotebook.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="Win64\Debug\mvNotebook.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win64">
-                        <RemoteName>nnNotebook.exe</RemoteName>
+                        <RemoteName>mvNotebook.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win64\Debug\nnNotebook.rsm" Configuration="Debug" Class="DebugSymbols"/>
-                <DeployFile LocalName="Win64\Debug\nnNotebook.rsm" Configuration="Debug" Class="DebugSymbols">
+                <DeployFile LocalName="Win64\Debug\mvNotebook.rsm" Configuration="Debug" Class="DebugSymbols">
                     <Platform Name="Win64">
-                        <RemoteName>nnNotebook.rsm</RemoteName>
+                        <RemoteName>mvNotebook.rsm</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win64\Debug\nnNotebook.exe" Configuration="Debug" Class="ProjectOutput"/>
+                <DeployFile LocalName="Win64\Debug\nnNotebook.rsm" Configuration="Debug" Class="DebugSymbols"/>
+                <DeployFile LocalName="_Assets\icons\icons8_Ball_Point_Pen_500px.png" Configuration="Debug" Class="UWP_DelphiLogo44">
+                    <Platform Name="Win64">
+                        <RemoteDir>Assets\</RemoteDir>
+                        <RemoteName>Logo44x44.png</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
