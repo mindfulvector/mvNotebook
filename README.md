@@ -11,7 +11,7 @@ Additional features will be added soon, such as file exporting, syncronization, 
 <h2>License & Open Source Restrictions</h2>
 Open Source: This code is released under the GPL v3 **with the following modification: redistribution in binary form is strictly forbidden**.
 
-Binary files that are ready to run (and fully portable!) are available for a minimum price of $1 and are NOT open source and NOT freeware OR shareware! 
+Binary files that are ready to run (and fully portable!) are available for a minimum price of $1 and are NOT open source and NOT freeware OR shareware!
 
 <h2>The binary versions of this program are available for purchase for as little as $1 on my itch.io page:</h2>
 [https://stoneorb-software.itch.io/mvnotebook]
@@ -33,4 +33,5 @@ I do also use a paid version of Delphi but you may be able to build most of the 
 If you have any trouble doing that, let me know and I will try to help!
 
 <h2>Screenshot with a cool retro background!</h2
-<img src="nnsNotebook-Repository-OG-Hero1.png" />
+
+![screenshot](https://github.com/mindfulvector/mvNotebook/blob/main/nnsNotebook-Repository-OG-Hero1.png)

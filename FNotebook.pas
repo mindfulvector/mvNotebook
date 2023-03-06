@@ -125,13 +125,13 @@ implementation
 
 {$R *.dfm}
 
-uses ShellApi, System.StrUtils, System.JSON, JsonObject { Chilkat }, FAbout;
+uses ShellApi, System.StrUtils, System.DateUtils, System.JSON, JsonObject { Chilkat }, FAbout;
 
 resourcestring
   StrUnableToLoadChikc = 'Unable to load chikcat.dll, error recieved was: "%s"';
   StrDefaultPage1_Begin = '<html><body><p><b><span style="color: #1F497D">';
-  StrDefaultPage1_Line2 = '<p>Welcome to the Near North Notebook program!</span></b>&nbsp;<br/><small>aka <b>nnNotebook</b>!</small></p>';
-  StrDefaultPage1_Line3 = '<p>Each Notebook tab above is a directory under Documents\nnNotebook. '+
+  StrDefaultPage1_Line2 = '<p>Welcome to the mindfulvector Notebook program!</span></b>&nbsp;<br/><small>aka <b>mvNotebook</b>!</small></p>';
+  StrDefaultPage1_Line3 = '<p>Each Notebook tab above is a directory under Documents\mvNotebook. '+
     'Each one can contain unlimited pages.</p><p>It currently can switch between 10 notebooks, '+
     'auto saves every 5 minutes as well as on tab change and on close.</p>';
   StrDefaultPage1_Line4 = '<p>Rich text formatting is fairly robust, and '+
@@ -221,7 +221,7 @@ var
   currentFilename, newFilenameBasename, newFileFullPath: string;
 begin
   Log('actPageRenameExecute ====================================================');
-  currentFilename := GetPageFilename(FileListBoxEx1.ItemIndex);
+  currentFilename := GetPageFilename(lstPages.ItemIndex);
   newFilenameBasename := InputBox('Rename page', 'Enter new name:', currentFilename);
   newFilenameBasename := newFilenameBasename.Trim;
   if (newFilenameBasename.Length > 0) and (newFilenameBasename <> currentFilename)  then
@@ -492,10 +492,10 @@ StrDefaultPage1_End)
   zbiCurrentPage := zbiNewPage;
 
 
-  Log(Format('LoadPage::FileListBoxEx1.ItemIndex( currently is )=%d', [FileListBoxEx1.ItemIndex]));
+  Log(Format('LoadPage::lstPages.ItemIndex( currently is )=%d', [lstPages.ItemIndex]));
   FileListBoxEx1.ItemIndex := zbiNewPage;
   lstPages.ItemIndex := zbiNewPage;
-  Log(Format('LoadPage::FileListBoxEx1.ItemIndex( new value is )=%d', [FileListBoxEx1.ItemIndex]));
+  Log(Format('LoadPage::lstPages.ItemIndex( new value is )=%d', [lstPages.ItemIndex]));
 
 
   Statusbar1.Panels[STATUSPANEL_CURRENT_LOCATION].Text := (
@@ -533,12 +533,22 @@ begin
 end;
 
 function TNotebook.GetPageFilename(zbiPage: ZeroBasedInteger): string;
+var
+  newFile: TextFile;
+  fullFilename: string;
 begin
   Log(Format('GetPageFilename(zbiPage=%d)', [zbiPage]));
   if (FileListBoxEx1.Count = 0) or (zbiPage > FileListBoxEx1.Count - 1) then
   begin
     Log(Format('Index out of range %d-%d, initialize new page', [0, FileListBoxEx1.Count-1]));
-    Result := Format('Page%d.html', [zbiPage]);
+    Result := Format('New Page [%x].html', [HourOf(Now)*86400+MinuteOf(Now)*3600+SecondOf(Now)]);
+    fullFilename := GetNotebookDir + Result;
+    // Create the file
+    AssignFile(newFile, fullFilename);
+    Rewrite(newFile);
+    CloseFile(newFile);
+    Append(newFile);
+    CloseFile(newFile);
   end else begin
     Result := FileListBoxEx1.Items[zbiPage];
   end;
@@ -753,8 +763,11 @@ end;
 
 procedure TNotebook.FileListBoxEx1Change(Sender: TObject);
 begin
-  // First two are -1 if we are loading a new page right now and shouldn't
-  // take any additional actions. Third is -1 if there is no selection.
+  // @TODO: Should this event be on lstPages instead? Not sure...
+
+  // Loading mode is not zero len if we are loading a list of pages or
+  // other such thing and should ignore events. ItemIndex is -1 if
+  // there is no selection.
   if (loadingMode.Length = 0) and (FileListBoxEx1.ItemIndex > -1) then
   begin
     Log('FileListBoxEx1Change, not ignored');
@@ -794,7 +807,7 @@ begin
 
   
   // Crete database directory (needed to write log output)
-  AppDataDir := Format('%s\nnNotebook\', [TPath.GetDocumentsPath]);
+  AppDataDir := Format('%s\mvNotebook\', [TPath.GetDocumentsPath]);
   TDirectory.CreateDirectory(AppDataDir);
 
   Log('Starting app');
