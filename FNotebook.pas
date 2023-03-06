@@ -6,7 +6,7 @@ uses
   htmlcomp, htmlpars,
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, IOUtils,
-  htmledit, Crypt2 { Chilkat }, Global { Chilkat }, System.ImageList,
+  htmledit, System.ImageList,
   Vcl.ImgList, Vcl.VirtualImageList,
   Vcl.BaseImageCollection, Vcl.ImageCollection, System.Actions, Vcl.ActnList,
   Vcl.PlatformDefaultStyleActnCtrls, Vcl.ActnMan, Vcl.ExtCtrls, Vcl.ComCtrls,
@@ -15,7 +15,7 @@ uses
   System.Generics.Collections,
   VCL.TMSFNCTypes, JvExComCtrls, JvToolBar, Vcl.StdCtrls, JvExStdCtrls,
   JvHtControls, Vcl.FileCtrl, FlCtrlEx,
-  clRamLog, clRichLog, Vcl.Menus, AdvMemo, advmjson, CJsonObject,
+  clRamLog, clRichLog, Vcl.Menus, AdvMemo, advmjson,
   Chilkat_v9_5_0_TLB;
 
 type
@@ -125,7 +125,7 @@ implementation
 
 {$R *.dfm}
 
-uses ShellApi, System.StrUtils, System.DateUtils, System.JSON, JsonObject { Chilkat }, FAbout;
+uses ShellApi, System.StrUtils, System.DateUtils, System.JSON, FAbout;
 
 resourcestring
   StrUnableToLoadChikc = 'Unable to load chikcat.dll, error recieved was: "%s"';
@@ -738,7 +738,6 @@ end;
 
 procedure TNotebook.LoadNotebookNames;
 var
-  json: HCkJsonObject;
   success: Boolean;
   newNotebookName: string;
   currNotebookName: string;
@@ -791,7 +790,7 @@ end;
 
 procedure TNotebook.FormCreate(Sender: TObject);
 var
-  glob: HCkGlobal;
+  //glob: HCkGlobal;
   success: boolean;
 begin
   richLog := TRichLog.Create(self);
@@ -815,6 +814,8 @@ begin
   // If off, log lines don't appear in status bar
   bDebugMode := false;
 
+  {
+  @Todo: Convert to ActiveX activation
   glob := CkGlobal_Create();
   success := CkGlobal_UnlockBundle(glob,'Anything for 30-day trial');
   if (success <> True) then
@@ -822,7 +823,7 @@ begin
     ShowMessage(Format(StrUnableToLoadChikc, [CkGlobal__lastErrorText(glob)]));
     Halt;
   end;
-
+  }
   zbiCurrentNotebook := 0;
   zbiCurrentPage := 0;
 

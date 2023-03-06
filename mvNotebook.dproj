@@ -141,11 +141,6 @@
             <Form>Notebook</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="CJsonObject.pas">
-            <Form>JsonObjectMv</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
         <DCCReference Include="FAbout.pas">
             <Form>AboutBox</Form>
             <FormType>dfm</FormType>
