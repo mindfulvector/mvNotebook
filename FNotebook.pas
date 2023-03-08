@@ -828,6 +828,7 @@ begin
   zbiCurrentPage := 0;
 
   metaFile := AppDataDir + 'notebooks.txt';
+  FreeAndNil(notebookNames);
   notebookNames := TStringList.Create;
   if FileExists(metaFile) then
   begin

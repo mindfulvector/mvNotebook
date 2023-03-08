@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{1F2C3923-8285-471F-9629-C50F87F9E413}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="mvNotebook.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="tests\mvNotebookTests.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="mvNotebook">
+        <MSBuild Projects="mvNotebook.dproj"/>
+    </Target>
+    <Target Name="mvNotebook:Clean">
+        <MSBuild Projects="mvNotebook.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mvNotebook:Make">
+        <MSBuild Projects="mvNotebook.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mvNotebookTests">
+        <MSBuild Projects="tests\mvNotebookTests.dproj"/>
+    </Target>
+    <Target Name="mvNotebookTests:Clean">
+        <MSBuild Projects="tests\mvNotebookTests.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mvNotebookTests:Make">
+        <MSBuild Projects="tests\mvNotebookTests.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="mvNotebook;mvNotebookTests"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="mvNotebook:Clean;mvNotebookTests:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="mvNotebook:Make;mvNotebookTests:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

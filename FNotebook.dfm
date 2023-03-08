@@ -3048,7 +3048,7 @@ object Notebook: TNotebook
     ActionManager = actman
     Caption = 'ActionToolBar2'
     Color = clMenuBar
-    ColorMap.DisabledFontColor = 7171437
+    ColorMap.DisabledFontColor = 10461087
     ColorMap.HighlightColor = clWhite
     ColorMap.BtnSelectedFont = clBlack
     ColorMap.UnusedColor = clWhite
