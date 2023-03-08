@@ -2,11 +2,11 @@
     <PropertyGroup>
         <ProjectGuid>{7198CC4E-14A1-4AFE-9D9D-E42F5BB078B4}</ProjectGuid>
         <ProjectVersion>19.5</ProjectVersion>
-        <FrameworkType>None</FrameworkType>
+        <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
-        <Platform Condition="'$(Platform)'==''">Win32</Platform>
-        <TargetedPlatforms>1</TargetedPlatforms>
+        <Platform Condition="'$(Platform)'==''">Win64</Platform>
+        <TargetedPlatforms>2</TargetedPlatforms>
         <AppType>Console</AppType>
         <MainSource>mvNotebookTests.dpr</MainSource>
     </PropertyGroup>
@@ -82,7 +82,7 @@
         <DCC_S>false</DCC_S>
         <DCC_F>false</DCC_F>
         <DCC_K>false</DCC_K>
-        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <UsingDelphiRTL>true</UsingDelphiRTL>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
@@ -121,6 +121,10 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <DCC_UsePackage>vclwinx;DataSnapServer;fmx;vclie;DbxCommonDriver;bindengine;IndyIPCommon;VCLRESTComponents;DBXMSSQLDriver;FireDACCommonODBC;emsclient;FMX_FlexCel_Components;appanalytics;IndyProtocols;vclx;dbxcds;vcledge;FmxTeeUI;Hydra_Core_D28;FlexCel_Pdf;DBXFirebirdDriver;FireDACSqliteDriver;DbxClientDriver;soapmidas;TeeUI;dbexpress;inet;vcltouch;FMX_FlexCel_Core;FireDACDBXDriver;fmxdae;VCL_FlexCel_Core;CustomIPTransport;FireDACMSSQLDriver;TMSQueryStudio;IndySystem;TMSVCLSecuritySystemPkgUIDXE14;VCL_TMSVCLGridExcelBridge;FMXTMSFNCUIPackPkgDXE14;ibxbindings;VCLTMSFNCAppToolsPkgDXE14;vclFireDAC;FMXTMSFNCCorePkgDXE14;FlexCel_Render;FireDACCommon;DataSnapServerMidas;FireDACODBCDriver;emsserverresource;bindcompdbx;rtl;FireDACMySQLDriver;VCL_FlexCel_Components;TMSVCLSecuritySystemPkgCoreDXE14;DBXSqliteDriver;TMSVCLUIPackPkgExDXE14;DBXSybaseASEDriver;AdvChartDXE14;vclimg;DataSnapFireDAC;inetdbxpress;FireDAC;TMSVCLUIPackPkgXlsDXE14;xmlrtl;ibxpress;Hydra_VCL_D28;dsnap;FireDACDb2Driver;DBXOracleDriver;DBXInformixDriver;vclib;fmxobj;bindcompvclsmp;DataSnapNativeClient;DatasnapConnectorsFreePascal;Gorilla3D_Delphi_11_2_0_Alexandria;FlexCel_Report;emshosting;FireDACCommonDriver;IndyIPClient;Mitov_Runtime;bindcompvclwinx;EsVclComponents;VCLTMSFNCUIPackPkgDXE14;emsedge;bindcompfmx;TMSVCLUIPackPkgDXE14;inetdb;ibmonitor;FireDACASADriver;Tee;vclactnband;fmxFireDAC;FireDACInfxDriver;DBXMySQLDriver;VclSmp;DataSnapCommon;fmxase;DBXOdbcDriver;dbrtl;FireDACOracleDriver;TeeDB;FlexCel_XlsAdapter;TMSVCLIWPkgDXE14;FireDACMSAccDriver;Hydra_FMX_D28;AbbreviaVCLD;DataSnapIndy10ServerTransport;FMXTMSFNCAppToolsPkgDXE14;DataSnapConnectors;vcldsnap;DBXInterBaseDriver;FireDACMongoDBDriver;FireDACTDataDriver;VCLTMSFNCCorePkgDXE14;vcldb;FlexCel_Core;bindcomp;IndyCore;RESTBackendComponents;FireDACADSDriver;RESTComponents;IndyIPServer;vcl;dsnapxml;adortl;dsnapcon;DataSnapClient;DataSnapProviderClient;DBXDb2Driver;emsclientfiredac;FireDACPgDriver;FireDACDSDriver;Mitov_VCL_Runtime;tethering;bindcompvcl;CloudService;DBXSybaseASADriver;FMXTee;soaprtl;soapserver;FireDACIBDriver;$(DCC_UsePackage)</DCC_UsePackage>
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+        <BT_BuildType>Debug</BT_BuildType>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -146,6 +150,14 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="NotebookTests.pas"/>
+        <DCCReference Include="..\FNotebook.pas">
+            <Form>Notebook</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\FAbout.pas">
+            <Form>AboutBox</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -186,6 +198,18 @@
                 <DeployFile LocalName="Win32\Debug\mvNotebookTests.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>mvNotebookTests.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win64\Debug\mvNotebookTests.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>mvNotebookTests.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win64\Debug\mvNotebookTests.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>mvNotebookTests.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -1020,8 +1044,8 @@
                 <Platform value="Linux64">False</Platform>
                 <Platform value="OSX64">False</Platform>
                 <Platform value="OSXARM64">False</Platform>
-                <Platform value="Win32">True</Platform>
-                <Platform value="Win64">False</Platform>
+                <Platform value="Win32">False</Platform>
+                <Platform value="Win64">True</Platform>
             </Platforms>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

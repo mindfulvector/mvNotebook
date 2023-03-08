@@ -8,7 +8,9 @@ uses
   madListModules,
   Vcl.Forms,
   FNotebook in 'FNotebook.pas' {Notebook},
-  FAbout in 'FAbout.pas' {AboutBox};
+  FAbout in 'FAbout.pas' {AboutBox},
+  MPublisher in 'MPublisher.pas',
+  MNotebook in 'MNotebook.pas';
 
 {$R *.res}
 

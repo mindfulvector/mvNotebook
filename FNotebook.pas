@@ -22,7 +22,19 @@ type
   ZeroBasedInteger = integer;
   OneBasedInteger = integer;
 
-  TNotebook = class(TForm)
+  type INotebook = interface (IInterface) ['{40BE0C1E-39A5-4728-9CC2-30B84B397234}']
+    function GetPage(AzbiNotebook: ZeroBasedInteger;
+                      AzbiPage: ZeroBasedInteger = 0): string;
+    function PutPage(AzbiNotebook: ZeroBasedInteger;
+                      AzbiPage: ZeroBasedInteger;
+                      ABody: string;
+                      AUseEditorFlag: boolean = false): string;
+
+    function GetNotebookDir(zbiNotebook: ZeroBasedInteger = -1): string;
+    function GetPageFilename(zbiPage: ZeroBasedInteger): string;
+  end;
+
+  TNotebook = class(TForm, INotebook)
     HtTabSet1: THtTabSet;
     HtmlEditor1: THtmlEditor;
     tSave: TTimer;
@@ -100,8 +112,6 @@ type
     procedure Log(message: string; alsoShowMessage: boolean = false);
     procedure LoadPage(zbiNewNotebook: ZeroBasedInteger;
                        zbiNewPage: ZeroBasedInteger = 0);
-    function GetNotebookDir(zbiNotebook: ZeroBasedInteger = -1): string;
-    function GetPageFilename(zbiPage: ZeroBasedInteger): string;
     procedure SavePage;
     procedure NextPage;
     procedure PrevPage;
@@ -116,6 +126,14 @@ type
     procedure LoadNotebookNames;
   public
     { Public declarations }
+    function GetPage(AzbiNotebook: ZeroBasedInteger;
+                      AzbiPage: ZeroBasedInteger = 0): string;
+    function PutPage(AzbiNotebook: ZeroBasedInteger;
+                      AzbiPage: ZeroBasedInteger;
+                      ABody: string;
+                      AUseEditorFlag: boolean = false): string;
+    function GetNotebookDir(zbiNotebook: ZeroBasedInteger = -1): string;
+    function GetPageFilename(zbiPage: ZeroBasedInteger): string;
   end;
 
 var
@@ -429,13 +447,32 @@ begin
   Log('LoadPage ----------------------------------------------------------------');
   Log(Format('LoadPage(%d, %d)', [zbiNewNotebook, zbiNewPage]));
 
+  // Call backend function which is testable to do actual work
+  GetPage(zbiNewNotebook, zbiNewPage);
+end;
+
+{
+get and return a page's contents to the caller. if the page does not exist,
+returns a blank string
+}
+function TNotebook.GetPage(AzbiNotebook: ZeroBasedInteger;
+                  AzbiPage: ZeroBasedInteger = 0): string;
+var
+  notebookDir: string;
+  pageFile: string;
+
+begin
+
+  Log('LoadPage ----------------------------------------------------------------');
+  Log(Format('LoadPage(%d, %d)', [AzbiNotebook, AzbiPage]));
+
   // Temporarily set the new notebook and page for directory creation
-  zbiCurrentNotebook := zbiNewNotebook;
-  zbiCurrentPage := zbiNewPage;
+  zbiCurrentNotebook := AzbiNotebook;
+  zbiCurrentPage := AzbiPage;
 
   // Ensure new notebook directory exists
   notebookDir := GetNotebookDir;
-  notebookDir := Format('%sNotebook%d\', [AppDataDir, zbiNewNotebook + 1]);
+  notebookDir := Format('%sNotebook%d\', [AppDataDir, AzbiNotebook + 1]);
   TDirectory.CreateDirectory(notebookDir);
   Log(Format('LoadPage::notebookDir=%s', [notebookDir]));
 
@@ -448,7 +485,7 @@ begin
   end;
 
   // Determine the page file
-  pageFile := notebookDir + GetPageFilename(zbiNewPage);
+  pageFile := notebookDir + GetPageFilename(AzbiPage);
   Log(Format('LoadPage::pageFile=%s', [pageFile]));
 
   EnterLoadingMode('LoadPage');
@@ -459,6 +496,7 @@ begin
   if TFile.Exists(pageFile) then
   begin
     Log(Format('LoadPage::LoadFromFile=%s', [pageFile]));
+    Result := TFile.ReadAllText(pageFile);
     HtmlEditor1.LoadFromFile(pageFile);
     HtmlEditor1.Visible := true;
   end
@@ -468,7 +506,7 @@ begin
     HtmlEditor1.Visible := true;
     HtmlEditor1.SelectAll;
     HtmlEditor1.DeleteSelection;
-    if (zbiNewNotebook = 0) and (zbiNewPage = 0) then
+    if (AzbiNotebook = 0) and (AzbiPage = 0) then
     begin
       Log('LoadPage::Initialize default Notebook 1, Page 1 content');
       HtmlEditor1.LoadFromString(
@@ -488,13 +526,13 @@ StrDefaultPage1_End)
     [zbiCurrentNotebook, zbiCurrentPage]));
 
   // Now set current notebook since we have finished loading
-  zbiCurrentNotebook := zbiNewNotebook;
-  zbiCurrentPage := zbiNewPage;
+  zbiCurrentNotebook := AzbiNotebook;
+  zbiCurrentPage := AzbiPage;
 
 
   Log(Format('LoadPage::lstPages.ItemIndex( currently is )=%d', [lstPages.ItemIndex]));
-  FileListBoxEx1.ItemIndex := zbiNewPage;
-  lstPages.ItemIndex := zbiNewPage;
+  FileListBoxEx1.ItemIndex := AzbiPage;
+  lstPages.ItemIndex := AzbiPage;
   Log(Format('LoadPage::lstPages.ItemIndex( new value is )=%d', [lstPages.ItemIndex]));
 
 
@@ -518,11 +556,38 @@ StrDefaultPage1_End)
   else
     RefreshPagesListBox();
 
-
-
 end;
 
-function TNotebook.GetNotebookDir(zbiNotebook: ZeroBasedInteger): string;
+{
+save a page body to a particular notebook page. if the page does not exist,
+a new filename will be created. the filename saved is returned in either
+case, or a blank string if the save failed.
+}
+function TNotebook.PutPage(AzbiNotebook: ZeroBasedInteger;
+      AzbiPage: ZeroBasedInteger;
+      ABody: string;
+      AUseEditorFlag: boolean = false): string;
+var
+  notebookDir: string;
+  pageFile: string;
+begin
+  Log('PutPage ----------------------------------------------------------------');
+
+  Log(Format('PutPage AzbiNotebook=%d AzbiPage=%d ABody=%s', [AzbiNotebook, AzbiPage, ABody]));
+
+  notebookDir := GetNotebookDir(AzbiNotebook);
+  pageFile := notebookDir + GetPageFilename(AzbiPage);
+  // Save current page to directory above
+  Log(Format('SavePage::notebookDir=%s', [notebookDir]));
+  Log(Format('SavePage::pageFile=%s', [pageFile]));
+  if AUseEditorFlag then
+    HtmlEditor1.SavetoFile(pageFile)
+  else
+    TFile.WriteAllText(pageFile, ABody);
+end;
+
+
+function TNotebook.GetNotebookDir(zbiNotebook: ZeroBasedInteger = -1): string;
 begin
   if zbiNotebook = -1 then zbiNotebook := zbiCurrentNotebook;
 
@@ -561,24 +626,9 @@ var
   pageFile: string;
 begin
   Log('SavePage ----------------------------------------------------------------');
-
-  Log(Format('SavePage zbiCurrentPage=%d', [zbiCurrentPage]));
-  if loadingMode.Length = 0 then
-  begin
-    if HtmlEditor1.Visible then
-    begin
-      notebookDir := GetNotebookDir;
-      pageFile := notebookDir + GetPageFilename(zbiCurrentPage);
-      // Save current page to directory above
-      Log(Format('SavePage::notebookDir=%s', [notebookDir]));
-      Log(Format('SavePage::pageFile=%s', [pageFile]));
-      HtmlEditor1.SavetoFile(pageFile);
-    end else begin
-      Log('Loading mode "<:DISABLED EDITOR:>" in effect, IGNORE SavePage command');
-    end;
-  end else begin
-    Log(Format('Loading mode "%s" in effect, IGNORE SavePage command', [loadingMode]));
-  end;
+  // Call testable backend function to do work. Last param tells it to use
+  // the editor's save function instead of the body string we passed
+  PutPage(zbiCurrentNotebook, zbiCurrentpage, '', true);
 end;
 
 procedure TNotebook.StatusBar1Click(Sender: TObject);

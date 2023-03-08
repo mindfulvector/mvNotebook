@@ -13,7 +13,9 @@ uses
   DUnitX.Loggers.Xml.NUnit,
   {$ENDIF }
   DUnitX.TestFramework,
-  NotebookTests in 'NotebookTests.pas';
+  NotebookTests in 'NotebookTests.pas',
+  FNotebook in '..\FNotebook.pas' {Notebook},
+  FAbout in '..\FAbout.pas' {AboutBox};
 
 {$IFNDEF TESTINSIGHT}
 var

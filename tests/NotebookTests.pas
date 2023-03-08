@@ -3,11 +3,13 @@ unit NotebookTests;
 interface
 
 uses
-  DUnitX.TestFramework;
+  DUnitX.TestFramework, FNotebook;
 
 type
   [TestFixture]
   TNotebookTests = class
+  private
+    notebook: TNotebook;
   public
     [Setup]
     procedure Setup;
@@ -16,34 +18,38 @@ type
     // Sample Methods
     // Simple single Test
     [Test]
-    [TestCase('Page 1234','<b>This is the content of the file</b>')]
-    procedure LoadsFileCorrectly(const AFilename: string; const AFileContent: string);
+    procedure LoadsFileCorrectly;
     // Test with TestCase Attribute to supply parameters.
     [Test]
-    [TestCase('Page 1234','<b>This is the content of the file</b>')]
-    [TestCase('Page 5678','Here is some file content')]
-    procedure SavesFileCorrectly(const AFilename: string; const AFileContent: string);
+    procedure SavesFileCorrectly;
   end;
 
 implementation
 
+uses
+  System.SysUtils;
+
 procedure TNotebookTests.Setup;
 begin
-
+  notebook := TNotebook.Create(nil);
 end;
 
 procedure TNotebookTests.TearDown;
 begin
-
+  FreeAndNil(notebook);
 end;
 
-procedure TNotebookTests.LoadsFileCorrectly(const AFilename: string; const AFileContent: string);
+procedure TNotebookTests.LoadsFileCorrectly;
 begin
 
 end;
 
-procedure TNotebookTests.SavesFileCorrectly(const AFilename: string; const AFileContent: string);
+procedure TNotebookTests.SavesFileCorrectly;
+var
+  fileName: string;
 begin
+  fileName := notebook.PutPage(9, 0, 'test string');
+  Assert.AreNotEqual('', fileName, false, 'Did not return a filename, file was not saved.');
 end;
 
 initialization

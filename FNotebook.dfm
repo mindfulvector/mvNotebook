@@ -2,8 +2,8 @@ object Notebook: TNotebook
   Left = 0
   Top = 0
   Caption = 'mvNotebook'
-  ClientHeight = 592
-  ClientWidth = 964
+  ClientHeight = 591
+  ClientWidth = 960
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -2965,7 +2965,7 @@ object Notebook: TNotebook
   object HtTabSet1: THtTabSet
     Left = 0
     Top = 0
-    Width = 964
+    Width = 960
     Height = 31
     ParentCustomHint = False
     Align = alTop
@@ -2998,13 +2998,12 @@ object Notebook: TNotebook
     UnselectedColor = cl3DLight
     StyleName = 'Windows'
     OnChange = HtTabSet1Change
-    ExplicitWidth = 960
   end
   object HtmlEditor1: THtmlEditor
     Left = 369
     Top = 65
-    Width = 595
-    Height = 508
+    Width = 591
+    Height = 507
     Align = alClient
     Caption = 'HtmlEditor1'
     Color = clWindow
@@ -3037,13 +3036,11 @@ object Notebook: TNotebook
     BlockHighlightColor = 1350598816
     Encoding = heDefault
     DefaultParaTag = 'p'
-    ExplicitWidth = 591
-    ExplicitHeight = 507
   end
   object ActionToolBar2: TActionToolBar
     Left = 0
     Top = 31
-    Width = 964
+    Width = 960
     Height = 34
     ActionManager = actman
     Caption = 'ActionToolBar2'
@@ -3059,22 +3056,20 @@ object Notebook: TNotebook
     Font.Style = []
     ParentFont = False
     Spacing = 0
-    ExplicitWidth = 960
   end
   object unvis: TPanel
     Left = 0
     Top = 65
     Width = 185
-    Height = 508
+    Height = 507
     Align = alLeft
     TabOrder = 3
     Visible = False
-    ExplicitHeight = 507
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 573
-    Width = 964
+    Top = 572
+    Width = 960
     Height = 19
     Panels = <
       item
@@ -3087,14 +3082,12 @@ object Notebook: TNotebook
       end>
     OnClick = StatusBar1Click
     OnDblClick = StatusBar1DblClick
-    ExplicitTop = 572
-    ExplicitWidth = 960
   end
   object lstPages: TListBox
     Left = 185
     Top = 65
     Width = 184
-    Height = 508
+    Height = 507
     Align = alLeft
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -3110,7 +3103,6 @@ object Notebook: TNotebook
     OnKeyDown = lstPagesKeyDown
     OnKeyUp = lstPagesKeyUp
     OnMouseDown = lstPagesMouseDown
-    ExplicitHeight = 507
   end
   object FileListBoxEx1: TFileListBoxEx
     Left = 191
